@@ -1,0 +1,25 @@
+/* Print: only the community notice (docs/01 F5). */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .masthead,
+  .tablist,
+  .footer,
+  .no-print,
+  .skip-link {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .panel,
+  .cards > li {
+    border-color: #000;
+    break-inside: avoid;
+  }
+}
