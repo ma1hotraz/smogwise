@@ -144,6 +144,11 @@ export const COOKING_DELTA: Record<CookingFuel | 'lpgExhaust', number> = {
   induction: 3,
 };
 
+/** Heating that burns fuel indoors: smoke plus carbon-monoxide risk (AL01, R07, S08). */
+export function burnsFuelIndoors(heating: Heating): boolean {
+  return heating === 'brazier' || heating === 'wood' || heating === 'kerosene';
+}
+
 export const HEATING_DELTA: Record<Heating, number> = {
   none: 0,
   electric: 0,

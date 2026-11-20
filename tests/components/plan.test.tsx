@@ -77,6 +77,20 @@ describe('PlanView — Today', () => {
     ).toBeInTheDocument();
   });
 
+  it('ignores an empty or out-of-range manual reading and keeps the forecast', async () => {
+    const user = userEvent.setup();
+    renderPlan();
+    expect(
+      await screen.findByText('Live forecast: CAMS model via Open-Meteo.'),
+    ).toBeInTheDocument();
+    await user.click(screen.getByText(/Have a reading from a local monitor/));
+    await user.click(screen.getByRole('button', { name: 'Use this reading' }));
+    expect(screen.getByText('Live forecast: CAMS model via Open-Meteo.')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('PM2.5 now (µg/m³)'), '5000');
+    await user.click(screen.getByRole('button', { name: 'Use this reading' }));
+    expect(screen.getByText('Live forecast: CAMS model via Open-Meteo.')).toBeInTheDocument();
+  });
+
   it('offers edit and forget actions', async () => {
     const user = userEvent.setup();
     const { onEdit, onForget } = renderPlan();

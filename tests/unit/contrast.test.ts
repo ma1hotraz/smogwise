@@ -5,19 +5,16 @@ import { describe, expect, it } from 'vitest';
 
 const css = readFileSync('src/client/styles/tokens.css', 'utf8');
 
-function tokens(selector: string): Record<string, string> {
-  const start = css.indexOf(selector);
-  const block = css.slice(css.indexOf('{', start) + 1, css.indexOf('}', start));
+/** Colour tokens for one theme, read from `--name: light-dark(#light, #dark)` declarations. */
+function tokens(theme: 'light' | 'dark'): Record<string, string> {
+  const pairs = [...css.matchAll(/--([\w-]+):\s*light-dark\((#[0-9a-f]{6}),\s*(#[0-9a-f]{6})\)/gi)];
   return Object.fromEntries(
-    [...block.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m): [string, string] => [
-      m[1] ?? '',
-      m[2] ?? '',
-    ]),
+    pairs.map((m): [string, string] => [m[1] ?? '', (theme === 'light' ? m[2] : m[3]) ?? '']),
   );
 }
 
-const light = tokens(':root {');
-const dark = { ...light, ...tokens(":root[data-theme='dark']") };
+const light = tokens('light');
+const dark = tokens('dark');
 
 function luminance(hex: string): number {
   const channels = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
@@ -71,9 +68,10 @@ describe.each([
   });
 });
 
-describe('dark theme is defined twice, identically', () => {
-  it('the prefers-color-scheme block matches the explicit dark theme', () => {
-    const media = tokens(":root:not([data-theme='light'])");
-    expect(media).toEqual(tokens(":root[data-theme='dark']"));
+describe('theme tokens', () => {
+  it('defines every colour for both themes, once', () => {
+    expect(Object.keys(light).length).toBeGreaterThanOrEqual(19);
+    expect(Object.keys(dark)).toEqual(Object.keys(light));
+    expect(css).not.toMatch(/prefers-color-scheme/);
   });
 });

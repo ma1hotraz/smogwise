@@ -1,47 +1,19 @@
 /** Today: the hour strip, safety alerts, dose, the AI brief and the time-slotted routine (F2). */
-import { useEffect, useState } from 'preact/hooks';
-
 import type { Plan } from '../../../shared/engine/types.js';
-import type { AiContext, BriefResponse } from '../../../shared/schema/ai.js';
+import type { AiContext } from '../../../shared/schema/ai.js';
 import { formatHour } from '../../../shared/time.js';
 import { HourStrip } from '../../components/AirVisuals.js';
 import { AlertList, DoseMeter } from '../../components/PlanBits.js';
-import { requestBrief } from '../../lib/api.js';
-import { canSpeak, speak, stopSpeaking } from '../../lib/speech.js';
+import { useBrief } from '../../lib/useBrief.js';
+import { useReadAloud } from '../../lib/useReadAloud.js';
 
 /** The AI brief. It waits until live data has arrived, so one visit costs one model call. */
 function Brief({ context, ready }: { context: AiContext; ready: boolean }) {
-  const [brief, setBrief] = useState<BriefResponse | null>(null);
-  const [speaking, setSpeaking] = useState(false);
-  const key = JSON.stringify(context);
-  useEffect(() => {
-    if (!ready) {
-      return undefined;
-    }
-    const controller = new AbortController();
-    void requestBrief(JSON.parse(key) as AiContext, controller.signal).then((next) => {
-      if (!controller.signal.aborted) {
-        setBrief(next);
-      }
-    });
-    return () => {
-      controller.abort();
-    };
-  }, [key, ready]);
+  const brief = useBrief(context, ready);
+  const reader = useReadAloud();
   if (!brief) {
     return <p class="hint">Writing today’s brief…</p>;
   }
-  const toggle = (): void => {
-    if (speaking) {
-      stopSpeaking();
-      setSpeaking(false);
-      return;
-    }
-    setSpeaking(true);
-    speak(`${brief.headline}. ${brief.summary}`, 'en-IN', () => {
-      setSpeaking(false);
-    });
-  };
   return (
     <section class="panel" aria-labelledby="brief-title">
       <h2 id="brief-title">{brief.headline}</h2>
@@ -52,14 +24,16 @@ function Brief({ context, ready }: { context: AiContext; ready: boolean }) {
             ? 'Written by Gemini from your plan’s figures.'
             : 'Written from your plan’s rules.'}
         </span>
-        {canSpeak() ? (
+        {reader.supported ? (
           <button
             class="button button-quiet button-small"
             type="button"
-            aria-pressed={speaking}
-            onClick={toggle}
+            aria-pressed={reader.speaking}
+            onClick={() => {
+              reader.toggle(`${brief.headline}. ${brief.summary}`, 'en-IN');
+            }}
           >
-            {speaking ? 'Stop reading' : 'Listen'}
+            {reader.speaking ? 'Stop reading' : 'Listen'}
           </button>
         ) : null}
       </p>

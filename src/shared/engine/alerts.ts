@@ -2,6 +2,7 @@
 import type { AirSource } from '../schema/air.js';
 import type { Household, Lifestyle } from '../schema/profile.js';
 import { ALERT_COPY, fill, type Copy } from './data/copy.js';
+import { burnsFuelIndoors } from './data/factors.js';
 import { SENSITIVE_LABELS } from './risk.js';
 import type { Alert, AlertLevel, RuleId, SensitiveGroup, Tier } from './types.js';
 
@@ -21,7 +22,6 @@ interface AlertRule {
   copy: (ctx: AlertContext) => Copy;
 }
 
-const UNSAFE_HEATING: readonly string[] = ['brazier', 'wood', 'kerosene'];
 const RANK: Record<AlertLevel, number> = { danger: 0, warning: 1, info: 2 };
 
 /** Joins a list as "a, b and c". */
@@ -35,7 +35,7 @@ const RULES: readonly AlertRule[] = [
   {
     ruleId: 'AL01',
     level: 'danger',
-    when: (c) => UNSAFE_HEATING.includes(c.lifestyle.heating),
+    when: (c) => burnsFuelIndoors(c.lifestyle.heating),
     copy: () => ALERT_COPY.AL01,
   },
   {

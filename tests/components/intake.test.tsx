@@ -147,8 +147,8 @@ describe('IntakeForm', () => {
     await user.click(screen.getByRole('button', { name: 'Use my location' }));
     expect(screen.getByText(/permission was not given/)).toBeInTheDocument();
     unmount();
-    // @ts-expect-error -- simulate a browser without the Geolocation API
-    delete navigator.geolocation;
+    // Simulate a browser without the Geolocation API.
+    Reflect.deleteProperty(navigator, 'geolocation');
     render(<IntakeForm initial={null} onSubmit={() => undefined} />);
     await user.click(screen.getByRole('button', { name: 'Use my location' }));
     expect(screen.getByText(/not available in this browser/)).toBeInTheDocument();

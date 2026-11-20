@@ -17,7 +17,7 @@ export const Prefs = z.object({
   textSize: z.enum(['100', '115', '130']),
 });
 export type Prefs = z.infer<typeof Prefs>;
-export const DEFAULT_PREFS: Prefs = { theme: 'system', textSize: '100' };
+const DEFAULT_PREFS: Prefs = { theme: 'system', textSize: '100' };
 
 const CachedAir = z.object({ savedAt: z.number(), air: AirData });
 

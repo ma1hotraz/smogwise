@@ -3,8 +3,7 @@ import { useState } from 'preact/hooks';
 
 import type { AiContext, AskResponse, Language } from '../../../shared/schema/ai.js';
 import { SelectField } from '../../components/Fields.js';
-import { useAnnounce } from '../../lib/announcer.js';
-import { askSmogwise } from '../../lib/api.js';
+import { useAsk } from './useAsk.js';
 
 const SOURCE_TEXT: Record<AskResponse['source'], string> = {
   gemini: 'Answered by Gemini using only your plan’s figures.',
@@ -21,26 +20,13 @@ const STARTERS = [
 export function AskPanel({ context }: { context: AiContext }) {
   const [question, setQuestion] = useState('');
   const [language, setLanguage] = useState<Language>('en');
-  // Each answer keeps the language it was asked in, so `lang` stays right if the picker changes.
-  const [answer, setAnswer] = useState<(AskResponse & { language: Language }) | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const announce = useAnnounce();
+  const { answer, busy, error, ask: send } = useAsk(context);
 
   const ask = async (text: string): Promise<void> => {
-    const trimmed = text.trim();
-    if (trimmed === '') {
-      setError('Type a question first.');
-      return;
+    if (text.trim() !== '') {
+      setQuestion(text.trim());
     }
-    setError(null);
-    setQuestion(trimmed);
-    setBusy(true);
-    const asked = language;
-    const reply = await askSmogwise(trimmed.slice(0, 400), context, asked);
-    setAnswer({ ...reply, language: asked });
-    setBusy(false);
-    announce('Answer ready.');
+    await send(text, language);
   };
 
   const suggestions = answer && answer.followUps.length > 0 ? answer.followUps : STARTERS;

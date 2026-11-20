@@ -1,18 +1,14 @@
-/** The plan: live air summary, then Today / Home air / Swaps / Community / Ask tabs. */
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+/** The plan: live air summary, then Today / Home air / Swaps / Community / Ask tabs (layout only). */
+import { useState } from 'preact/hooks';
 
-import { buildContext } from '../../../shared/ai/context.js';
-import { buildPlan } from '../../../shared/engine/plan.js';
-import type { Choices } from '../../../shared/engine/types.js';
 import type { Profile } from '../../../shared/schema/profile.js';
 import { Tabs } from '../../components/Tabs.js';
-import { useAnnounce } from '../../lib/announcer.js';
 import { lazyComponent } from '../../lib/lazy.js';
-import { useAir } from '../../lib/useAir.js';
 import { AirHeader } from './AirHeader.js';
 import { HomePanel } from './HomePanel.js';
 import { SwapsPanel } from './SwapsPanel.js';
 import { TodayPanel } from './TodayPanel.js';
+import { usePlanModel } from './usePlanModel.js';
 
 const TABS = [
   { id: 'today', label: 'Today' },
@@ -35,31 +31,8 @@ interface PlanViewProps {
 }
 
 export function PlanView({ profile, focusHeading = false, onEdit, onForget }: PlanViewProps) {
-  const [manual, setManual] = useState<number | null>(null);
-  const [choices, setChoices] = useState<Choices>({});
   const [tab, setTab] = useState<string>('today');
-  const { air, status } = useAir(profile.location, manual);
-  const plan = useMemo(() => buildPlan(profile, air, new Date(), choices), [profile, air, choices]);
-  const context = useMemo(() => buildContext(plan, profile), [plan, profile]);
-  const announce = useAnnounce();
-  const firstDose = useRef(true);
-
-  useEffect(() => {
-    if (status === 'live') {
-      announce(`Live air data loaded for ${profile.location.name}.`);
-    } else if (status === 'estimated') {
-      announce('Live data is unavailable; showing a seasonal estimate.');
-    }
-  }, [status, announce, profile.location.name]);
-
-  const reduction = plan.exposure.reductionPct;
-  useEffect(() => {
-    if (firstDose.current) {
-      firstDose.current = false;
-      return;
-    }
-    announce(`With your choices: ${reduction}% less PM2.5 breathed in today.`);
-  }, [reduction, announce]);
+  const { plan, context, status, choices, setChoices, setManual } = usePlanModel(profile);
 
   return (
     <>

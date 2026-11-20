@@ -1,29 +1,30 @@
 /*
  * Design tokens (docs/06). Overcast paper, slate ink, winter-sky blue for actions and clean air,
- * smog ochre for haze. Contrast of every text pair is asserted in tests/unit/contrast.test.ts.
+ * smog ochre for haze. Each colour is defined once for both themes with light-dark(); contrast of
+ * every pair is asserted in tests/unit/contrast.test.ts.
  */
 :root {
-  --paper: #eef1f3;
-  --surface: #ffffff;
-  --ink: #1d2733;
-  --ink-soft: #4a5866;
-  --line: #c9d2d9;
-  --sky: #2f6f8f;
-  --sky-ink: #ffffff;
-  --sky-wash: #dcebf2;
-  --haze: #8a5f17;
-  --haze-wash: #f6ead2;
-  --danger: #9b2335;
-  --danger-wash: #f8e1e4;
-  --focus: #1b5fd1;
+  --paper: light-dark(#eef1f3, #141b22);
+  --surface: light-dark(#ffffff, #1c252e);
+  --ink: light-dark(#1d2733, #e3e8ec);
+  --ink-soft: light-dark(#4a5866, #a9b6c1);
+  --line: light-dark(#c9d2d9, #34424f);
+  --sky: light-dark(#2f6f8f, #7fb6d3);
+  --sky-ink: light-dark(#ffffff, #0d1a22);
+  --sky-wash: light-dark(#dcebf2, #1e3442);
+  --haze: light-dark(#8a5f17, #e0bc72);
+  --haze-wash: light-dark(#f6ead2, #3a3020);
+  --danger: light-dark(#9b2335, #f2a0ab);
+  --danger-wash: light-dark(#f8e1e4, #3d2227);
+  --focus: light-dark(#1b5fd1, #8ab4ff);
 
   /* Air bands 0–5 (bars carry a hatch from level 3 so colour is never the only signal). */
-  --lvl-0: #2f7449;
-  --lvl-1: #5f7420;
-  --lvl-2: #a37a14;
-  --lvl-3: #a8521f;
-  --lvl-4: #9c3b4a;
-  --lvl-5: #5f2a52;
+  --lvl-0: light-dark(#2f7449, #6cc28f);
+  --lvl-1: light-dark(#5f7420, #b5c95a);
+  --lvl-2: light-dark(#a37a14, #e3bd55);
+  --lvl-3: light-dark(#a8521f, #ec8b54);
+  --lvl-4: light-dark(#9c3b4a, #e27a8a);
+  --lvl-5: light-dark(#5f2a52, #c38ab6);
 
   --font:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
@@ -42,55 +43,16 @@
   --radius-control: 6px;
   --radius-panel: 12px;
   --measure: 72ch;
+  /* color-scheme picks the light-dark() side: the system setting, or the user's choice below. */
+  color-scheme: light dark;
+}
+
+:root[data-theme='light'] {
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --paper: #141b22;
-  --surface: #1c252e;
-  --ink: #e3e8ec;
-  --ink-soft: #a9b6c1;
-  --line: #34424f;
-  --sky: #7fb6d3;
-  --sky-ink: #0d1a22;
-  --sky-wash: #1e3442;
-  --haze: #e0bc72;
-  --haze-wash: #3a3020;
-  --danger: #f2a0ab;
-  --danger-wash: #3d2227;
-  --focus: #8ab4ff;
-  --lvl-0: #6cc28f;
-  --lvl-1: #b5c95a;
-  --lvl-2: #e3bd55;
-  --lvl-3: #ec8b54;
-  --lvl-4: #e27a8a;
-  --lvl-5: #c38ab6;
   color-scheme: dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --paper: #141b22;
-    --surface: #1c252e;
-    --ink: #e3e8ec;
-    --ink-soft: #a9b6c1;
-    --line: #34424f;
-    --sky: #7fb6d3;
-    --sky-ink: #0d1a22;
-    --sky-wash: #1e3442;
-    --haze: #e0bc72;
-    --haze-wash: #3a3020;
-    --danger: #f2a0ab;
-    --danger-wash: #3d2227;
-    --focus: #8ab4ff;
-    --lvl-0: #6cc28f;
-    --lvl-1: #b5c95a;
-    --lvl-2: #e3bd55;
-    --lvl-3: #ec8b54;
-    --lvl-4: #e27a8a;
-    --lvl-5: #c38ab6;
-    color-scheme: dark;
-  }
 }
 
 :root[data-text='115'] {

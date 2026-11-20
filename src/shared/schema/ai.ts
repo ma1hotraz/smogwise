@@ -4,7 +4,7 @@ import * as z from 'zod/mini';
 import { AirSource } from './air.js';
 import { CommuteMode, PLACE_NAME } from './profile.js';
 
-export const RULE_ID = /^(?:A|L|H|E|R|S|C|AL)\d{2}$/;
+const RULE_ID = /^(?:A|L|H|E|R|S|C|AL)\d{2}$/;
 const ruleId = z.string().check(z.regex(RULE_ID));
 /** Short engine-written text: letters, digits and everyday punctuation only (no markup). */
 const plainText = (max: number) =>

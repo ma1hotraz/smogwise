@@ -2,6 +2,7 @@
 import type { CommuteMode, Lifestyle } from '../schema/profile.js';
 import { round } from '../time.js';
 import {
+  burnsFuelIndoors,
   CAR_MODES,
   COOKING_WEEK,
   HEATING_WEEK,
@@ -185,8 +186,6 @@ const BURNING_SWAP: Swap = {
   choice: { kind: 'stopBurning' },
 };
 
-const UNSAFE_HEATING = new Set(['brazier', 'wood', 'kerosene']);
-
 /** Every alternative that fits this household, in a stable order. */
 export function swapsFor(ctx: SwapContext): Swap[] {
   const { lifestyle } = ctx;
@@ -194,7 +193,7 @@ export function swapsFor(ctx: SwapContext): Swap[] {
   return [
     ...(commutes(lifestyle) ? [...commuteSwaps(ctx, base), ...sharedTripSwaps(ctx, base)] : []),
     ...(lifestyle.cooking === 'biomass' ? [cookingSwap(ctx, base)] : []),
-    ...(UNSAFE_HEATING.has(lifestyle.heating) ? [heatingSwap(ctx, base)] : []),
+    ...(burnsFuelIndoors(lifestyle.heating) ? [heatingSwap(ctx, base)] : []),
     ...(lifestyle.burnsWaste ? [BURNING_SWAP] : []),
   ];
 }

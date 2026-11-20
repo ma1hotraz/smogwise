@@ -2,7 +2,8 @@
 import type { Household, Lifestyle } from '../schema/profile.js';
 import { formatHour, round } from '../time.js';
 import { ROUTINE_COPY, fill } from './data/copy.js';
-import { MODES, N95_FACTOR } from './data/factors.js';
+import { burnsFuelIndoors, MODES, N95_FACTOR } from './data/factors.js';
+import { commutes } from './choices.js';
 import { indoorPm, type HomeState } from './indoor.js';
 import type { RoutineStep, RuleId, Tier, Windows } from './types.js';
 
@@ -93,8 +94,8 @@ function exerciseSteps(ctx: RoutineContext): RoutineStep[] {
 
 /** R04: commute protection. Metro riders and home workers need no step. */
 function commuteSteps(ctx: RoutineContext): RoutineStep[] {
-  const { mode, km, daysPerWeek, departHour } = ctx.lifestyle.commute;
-  if (mode === 'wfh' || mode === 'metro' || km === 0 || daysPerWeek === 0) {
+  const { mode, departHour } = ctx.lifestyle.commute;
+  if (!commutes(ctx.lifestyle) || mode === 'metro') {
     return [];
   }
   if (!MODES[mode].exposed) {
@@ -132,7 +133,7 @@ function householdSteps(ctx: RoutineContext): RoutineStep[] {
 /** R07 + R08: heating safety and the night. */
 function eveningSteps(ctx: RoutineContext): RoutineStep[] {
   const steps: RoutineStep[] = [];
-  if (['brazier', 'wood', 'kerosene'].includes(ctx.lifestyle.heating)) {
+  if (burnsFuelIndoors(ctx.lifestyle.heating)) {
     steps.push(step(20, 'R07', 'heatSafely'));
   }
   steps.push(step(22, 'R08', ctx.lifestyle.home.purifierCadr > 0 ? 'purifierNight' : 'doorNight'));
