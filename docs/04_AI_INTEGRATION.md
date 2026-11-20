@@ -17,7 +17,7 @@
 | `/api/ask`   | 500               | 10 s    | 10 min TTL, key = SHA-256(q + context) | `answerByIntent(question, ctx)`  |
 
 One retry on 429/5xx with jitter; thinking level minimal; model from `GEMINI_MODEL`
-(default `gemini-3.6-flash`). In-flight requests with the same key share one promise.
+(default `gemini-3.5-flash-lite`). In-flight requests with the same key share one promise.
 
 ## 3. Context (the only data the model sees)
 

@@ -6,7 +6,7 @@ const positiveInt = (fallback: number) =>
 const ConfigSchema = z.object({
   PORT: positiveInt(8080),
   GEMINI_API_KEY: z.optional(z.string().check(z.trim())),
-  GEMINI_MODEL: z._default(z.string().check(z.trim(), z.minLength(1)), 'gemini-3.6-flash'),
+  GEMINI_MODEL: z._default(z.string().check(z.trim(), z.minLength(1)), 'gemini-3.5-flash-lite'),
   AI_TIMEOUT_MS: positiveInt(10_000),
   UPSTREAM_TIMEOUT_MS: positiveInt(5_000),
   RATE_LIMIT_PER_MIN: positiveInt(10),

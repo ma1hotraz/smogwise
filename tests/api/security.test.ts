@@ -114,7 +114,7 @@ describe('config and logging', () => {
     expect(config).toMatchObject({
       port: 8080,
       geminiApiKey: undefined,
-      geminiModel: 'gemini-3.6-flash',
+      geminiModel: 'gemini-3.5-flash-lite',
       rateLimitPerMin: 10,
     });
     expect(loadConfig({ GEMINI_API_KEY: ' abc ', PORT: '9000' })).toMatchObject({
