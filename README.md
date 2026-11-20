@@ -6,7 +6,7 @@
 > when to air the home, exercise and travel, which indoor fixes help most, which sustainable swaps
 > to make — and shows the **direct impact** of every choice in numbers.
 
-**Chosen vertical:** [Challenge 6] Urban Air Quality Assistant · **Live demo:** _add URL after deploy_
+**Chosen vertical:** [Challenge 6] Urban Air Quality Assistant · **Live demo:** https://smogwise.vercel.app
 
 ---
 
