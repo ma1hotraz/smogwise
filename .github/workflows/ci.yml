@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -43,7 +43,11 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: End-to-end and accessibility tests
         run: npm run test:e2e
-      - name: Secret scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+      # The CLI scans the whole history; gitleaks-action fails on a repository's first push
+      # (it scans `<root>^..HEAD`, and the root commit has no parent).
+      - name: Secret scan (gitleaks, full history)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.24.3
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar xz -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --verbose --exit-code 1 .

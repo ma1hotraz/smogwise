@@ -4,6 +4,13 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Major upgrades (e.g. Preact 11, ESLint 10) change APIs; they are done by hand with the docs.
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    groups:
+      minor-and-patch:
+        update-types: ['minor', 'patch']
   - package-ecosystem: github-actions
     directory: /
     schedule:
