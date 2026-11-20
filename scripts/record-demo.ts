@@ -169,6 +169,6 @@ await pause(3500);
 await caption(page, 'smogwise.vercel.app  ·  github.com/ma1hotraz/smogwise');
 await pause(3500);
 
-console.log(`recorded ${((Date.now() - started) / 1000).toFixed(1)} s`);
+process.stdout.write(`recorded ${((Date.now() - started) / 1000).toFixed(1)} s\n`);
 await context.close();
 await browser.close();

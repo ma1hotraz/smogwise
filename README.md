@@ -98,6 +98,7 @@ tests/        unit, property, api, components, e2e
 - ESLint strict-type-checked + jsx-a11y strict, **zero warnings**; complexity ≤ 10, functions ≤ 40
   lines, files ≤ 250 lines; layer boundaries and engine purity (`Date.now`, `Math.random`, `fetch`
   banned in the engine) are **lint-enforced** ([`eslint.config.js`](eslint.config.js)).
+- No `console` statements anywhere (lint-enforced repo-wide); no code or style file over 300 lines.
 - Single responsibility in the UI: components only render; data, state and announcements live
   in view-model hooks (`usePlanModel`, `useBrief`, `useAsk`, `useReadAloud`, `useAir`).
 - No dead code (knip) and **zero duplicated blocks** (jscpd), both enforced in CI; colour tokens

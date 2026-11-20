@@ -8,6 +8,9 @@ const DIST = 'dist/client';
 const KB = 1024;
 const BUDGETS = { initialJs: 35, totalJs: 60, css: 8, fonts: 0 };
 
+/** Writes one report line to stdout (scripts report through stdout, not console). */
+const report = (line) => process.stdout.write(`${line}\n`);
+
 const gz = (file) => gzipSync(readFileSync(file)).length / KB;
 const raw = (file) => statSync(file).size / KB;
 
@@ -38,11 +41,11 @@ let failed = false;
 for (const [label, value, budget] of rows) {
   const ok = value <= budget;
   failed ||= !ok;
-  console.log(
+  report(
     `${ok ? 'ok  ' : 'FAIL'} ${label.padEnd(18)} ${value.toFixed(1).padStart(7)} kB  (budget ${budget} kB)`,
   );
 }
-console.log(`     ${byExt('.js').length} JS chunks (Ask and Community load on demand)`);
+report(`     ${byExt('.js').length} JS chunks (Ask and Community load on demand)`);
 
 const key = readdirSync(join(DIST, 'assets'))
   .filter((name) => name.endsWith('.js'))
@@ -50,7 +53,7 @@ const key = readdirSync(join(DIST, 'assets'))
     /AIza[0-9A-Za-z_-]{35}|GEMINI_API_KEY/.test(readFileSync(join(DIST, 'assets', name), 'utf8')),
   );
 if (key) {
-  console.log('FAIL the client bundle mentions the Gemini key');
+  report('FAIL the client bundle mentions the Gemini key');
   failed = true;
 }
 process.exit(failed ? 1 : 0);

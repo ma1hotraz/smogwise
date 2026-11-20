@@ -18,6 +18,7 @@ export default tseslint.config(
     },
     rules: {
       eqeqeq: 'error',
+      'no-console': 'error',
       curly: 'error',
       'prefer-const': 'error',
       'no-eval': 'error',
@@ -40,7 +41,6 @@ export default tseslint.config(
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/shared/engine/data/**'],
     rules: {
-      'no-console': 'error',
       'max-lines': ['error', { max: 250, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['error', { max: 40, skipBlankLines: true, skipComments: true }],
     },

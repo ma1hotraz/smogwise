@@ -1,0 +1,214 @@
+/* Form controls, fields, the intake samples and the place combobox. */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-control);
+  border: 2px solid var(--sky);
+  background: var(--sky);
+  color: var(--sky-ink);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.button-quiet {
+  background: transparent;
+  color: var(--sky);
+}
+
+.button-small {
+  min-height: 2rem;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--step--1);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.field label,
+.field legend {
+  font-weight: 600;
+}
+
+.hint {
+  font-size: var(--step--1);
+  color: var(--ink-soft);
+}
+
+.error {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+input[type='number'],
+input[type='text'],
+input[type='search'],
+select,
+textarea {
+  width: 100%;
+  max-width: 24rem;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--ink-soft);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+
+textarea {
+  max-width: var(--measure);
+  min-height: 5rem;
+}
+
+[aria-invalid='true'] {
+  border-color: var(--danger);
+  border-width: 2px;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-height: 2rem;
+  margin-bottom: var(--space-2);
+}
+
+.check input {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0;
+  accent-color: var(--sky);
+  flex: none;
+}
+
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  margin: 0 0 var(--space-5);
+  background: var(--surface);
+}
+
+fieldset legend {
+  font-size: var(--step-1);
+  font-weight: 700;
+  padding: 0 var(--space-2);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  column-gap: var(--space-5);
+}
+
+/* Intake */
+.samples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0 0 var(--space-6);
+  list-style: none;
+}
+
+.sample {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--sky);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.sample strong {
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.sample span {
+  font-size: var(--step--1);
+  color: var(--ink-soft);
+}
+
+.combo {
+  position: relative;
+  max-width: 24rem;
+}
+
+.combo [role='listbox'] {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-1);
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--ink-soft);
+  border-radius: var(--radius-control);
+}
+
+.combo [role='option'] {
+  padding: var(--space-2) var(--space-3);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.combo [aria-selected='true'] {
+  background: var(--sky-wash);
+  outline: 2px solid var(--sky);
+}
+
+fieldset.plain {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+  background: none;
+}
+
+fieldset.plain legend {
+  font-size: var(--step-0);
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+
+details summary {
+  cursor: pointer;
+  color: var(--sky);
+  font-weight: 600;
+  min-height: 2rem;
+  margin-bottom: var(--space-3);
+}
+
+.prefs .field {
+  margin: 0;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.prefs select {
+  min-height: 2.25rem;
+  width: auto;
+}

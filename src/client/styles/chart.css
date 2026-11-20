@@ -1,0 +1,59 @@
+/* The 24-hour PM2.5 strip (docs/06 §2: shapes, hatching and a table twin). */
+.strip svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 52rem;
+}
+
+.strip .bar {
+  fill: var(--lvl-3);
+}
+.strip .lvl-0 {
+  fill: var(--lvl-0);
+}
+.strip .lvl-1 {
+  fill: var(--lvl-1);
+}
+.strip .lvl-2 {
+  fill: var(--lvl-2);
+}
+.strip .lvl-4 {
+  fill: var(--lvl-4);
+}
+.strip .lvl-5 {
+  fill: var(--lvl-5);
+}
+.strip .hatch-line {
+  stroke: rgb(255 255 255 / 0.55);
+  stroke-width: 2;
+}
+.strip .window {
+  fill: var(--sky-wash);
+  stroke: var(--sky);
+  stroke-width: 1.5;
+}
+.strip .now {
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+.strip text {
+  fill: var(--ink-soft);
+  font-size: 9px;
+}
+.strip .window-label {
+  fill: var(--sky);
+  font-weight: 700;
+}
+
+/* On phones the chart scales down; keep its labels legible (the window is named in the caption). */
+@media (max-width: 40rem) {
+  .strip text {
+    font-size: 15px;
+  }
+
+  .strip .window-label {
+    display: none;
+  }
+}

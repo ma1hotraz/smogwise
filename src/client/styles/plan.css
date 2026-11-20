@@ -1,0 +1,255 @@
+/* The plan: band chip, panels, alerts, dose meter, routine, cards, tabs and answers. */
+.lede {
+  font-size: var(--step-1);
+  max-width: 40ch;
+}
+
+.status-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  font-size: var(--step--1);
+  color: var(--ink-soft);
+  margin-bottom: var(--space-4);
+}
+
+.band {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 2px solid var(--band, var(--lvl-3));
+  border-radius: 999px;
+  font-weight: 700;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.band svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: var(--band, var(--lvl-3));
+}
+
+.band-0 {
+  --band: var(--lvl-0);
+}
+.band-1 {
+  --band: var(--lvl-1);
+}
+.band-2 {
+  --band: var(--lvl-2);
+}
+.band-4 {
+  --band: var(--lvl-4);
+}
+.band-5 {
+  --band: var(--lvl-5);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 32rem;
+  font-size: var(--step--1);
+}
+
+caption {
+  text-align: left;
+  font-weight: 650;
+  padding-bottom: var(--space-2);
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.alerts {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.alert {
+  border-left: 5px solid var(--haze);
+  background: var(--haze-wash);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+}
+
+.alert h3 {
+  font-size: var(--step-0);
+  margin-bottom: var(--space-1);
+}
+
+.alert p {
+  margin: 0;
+}
+
+.alert-danger {
+  border-color: var(--danger);
+  background: var(--danger-wash);
+}
+
+.alert-info {
+  border-color: var(--sky);
+  background: var(--sky-wash);
+}
+
+.dose {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.dose meter {
+  width: 100%;
+  max-width: 28rem;
+  height: 1rem;
+}
+
+.dose-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.dose-figures strong {
+  font-size: var(--step-2);
+  display: block;
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.timeline time {
+  font-weight: 700;
+  color: var(--sky);
+}
+
+.timeline h3 {
+  font-size: var(--step-0);
+  margin-bottom: var(--space-1);
+}
+
+.timeline p {
+  margin: 0;
+}
+
+.impact {
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--haze);
+}
+
+.rule {
+  font-size: var(--step--1);
+  color: var(--ink-soft);
+}
+
+.cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.cards > li {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+}
+
+.cards h3 {
+  font-size: var(--step-0);
+  margin-bottom: var(--space-1);
+}
+
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: var(--space-2) 0;
+  font-size: var(--step--1);
+  padding: 0;
+  list-style: none;
+}
+
+.figures strong {
+  font-size: var(--step-0);
+}
+
+/* Tabs */
+.tablist {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  gap: var(--space-1);
+  border-bottom: 2px solid var(--line);
+  margin-bottom: var(--space-5);
+}
+
+.tab {
+  flex: none;
+  white-space: nowrap;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  color: var(--ink-soft);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.tab[aria-selected='true'] {
+  color: var(--ink);
+  border-bottom-color: var(--sky);
+}
+
+.answer {
+  border-left: 4px solid var(--sky);
+  padding: var(--space-3) var(--space-4);
+  background: var(--sky-wash);
+  border-radius: var(--radius-control);
+  margin: var(--space-4) 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.cards h4 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--step-0);
+}

@@ -2,6 +2,9 @@ import { render } from 'preact';
 
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/forms.css';
+import './styles/plan.css';
+import './styles/chart.css';
 import './styles/print.css';
 import { App, loadPlanView } from './App.js';
 import { AnnouncerProvider } from './lib/announcer.js';
