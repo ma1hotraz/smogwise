@@ -21,7 +21,8 @@ const STARTERS = [
 export function AskPanel({ context }: { context: AiContext }) {
   const [question, setQuestion] = useState('');
   const [language, setLanguage] = useState<Language>('en');
-  const [answer, setAnswer] = useState<AskResponse | null>(null);
+  // Each answer keeps the language it was asked in, so `lang` stays right if the picker changes.
+  const [answer, setAnswer] = useState<(AskResponse & { language: Language }) | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const announce = useAnnounce();
@@ -35,8 +36,9 @@ export function AskPanel({ context }: { context: AiContext }) {
     setError(null);
     setQuestion(trimmed);
     setBusy(true);
-    const reply = await askSmogwise(trimmed.slice(0, 400), context, language);
-    setAnswer(reply);
+    const asked = language;
+    const reply = await askSmogwise(trimmed.slice(0, 400), context, asked);
+    setAnswer({ ...reply, language: asked });
     setBusy(false);
     announce('Answer ready.');
   };
@@ -87,7 +89,7 @@ export function AskPanel({ context }: { context: AiContext }) {
       {answer ? (
         <section class="answer" aria-labelledby="answer-title">
           <h3 id="answer-title">Answer</h3>
-          <p lang={language}>{answer.answer}</p>
+          <p lang={answer.language}>{answer.answer}</p>
           <p class="hint">
             {SOURCE_TEXT[answer.source]}
             {answer.citedRuleIds.length > 0
@@ -103,7 +105,7 @@ export function AskPanel({ context }: { context: AiContext }) {
             <button
               class="button button-quiet button-small"
               type="button"
-              lang={answer ? language : 'en'}
+              lang={answer ? answer.language : 'en'}
               onClick={() => {
                 void ask(s);
               }}

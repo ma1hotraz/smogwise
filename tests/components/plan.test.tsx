@@ -229,6 +229,9 @@ describe('PlanView — Community and Ask (lazy)', () => {
     await user.click(screen.getByRole('button', { name: 'Ask' }));
     expect(await screen.findByText('Walk indoors this evening.')).toHaveAttribute('lang', 'hi');
     expect(screen.getByText(/Based on rules R09/)).toBeInTheDocument();
+    // Changing the picker afterwards must not re-label the answer already shown.
+    await user.selectOptions(screen.getByLabelText('Answer in'), 'en');
+    expect(screen.getByText('Walk indoors this evening.')).toHaveAttribute('lang', 'hi');
     await user.click(screen.getByRole('button', { name: 'What about tomorrow?' }));
     await waitFor(() => {
       expect(screen.getByTestId('announcer')).toHaveTextContent('Answer ready.');
