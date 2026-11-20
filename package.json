@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Smogwise — a GenAI clean-air companion that helps families and communities get through severe winter smog.",
+  "description": "Smogwise \u2014 a GenAI clean-air companion that helps families and communities get through severe winter smog.",
   "engines": {
     "node": ">=22"
   },
@@ -21,8 +21,10 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check:bundle": "node scripts/check-bundle.mjs",
-    "check": "npm run lint && npm run format && npm run typecheck && npm test && npm run build && npm run check:bundle",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "check": "npm run lint && npm run lint:dead && npm run lint:dupes && npm run format && npm run typecheck && npm test && npm run build && npm run check:bundle",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "lint:dead": "knip",
+    "lint:dupes": "jscpd"
   },
   "dependencies": {
     "@google/genai": "^3.6.1",
@@ -53,7 +55,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "fast-check": "^4.10.2",
     "globals": "^17.13.0",
+    "jscpd": "^4.3.0",
     "jsdom": "^30.1.3",
+    "knip": "^5.88.1",
     "preact": "^10.29.8",
     "prettier": "^3.9.10",
     "supertest": "^7.3.1",

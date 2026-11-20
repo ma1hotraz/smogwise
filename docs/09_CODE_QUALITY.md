@@ -28,7 +28,8 @@
   `react` + `react-hooks` (Preact compatible), complexity and size rules.
 - Prettier, EditorConfig, `.nvmrc`.
 - Git hooks (`.githooks/pre-commit`): lint, format, typecheck.
-- **CI** (`.github/workflows/ci.yml`): install → lint → format → typecheck → unit/API/component
+- **CI** (`.github/workflows/ci.yml`): install → lint → dead code (knip) → duplication (jscpd, zero
+  clones) → format → typecheck → unit/API/component
   tests with coverage → build → bundle budget → client bundle secret scan → `npm audit` →
   Playwright e2e → gitleaks.
 - Dependabot for npm and GitHub Actions.

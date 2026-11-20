@@ -71,10 +71,10 @@ src/
     main.tsx, App.tsx          entry and shell (skip link, preferences)
     components/                Tabs, Fields, AirVisuals (band chip, hour strip), PlanBits (alerts, dose meter)
     features/intake/           samples, location combobox, household / travel / home fields
-    features/plan/             air header, Today, Home air, Swaps panels and the plan view
+    features/plan/             usePlanModel (view model), air header, Today, Home air, Swaps, plan view
     features/community/        scale, actions, printable notice (lazy)
-    features/ask/              assistant panel (lazy)
-    lib/                       api, storage, announcer, air hook, preferences, speech, what-if, lazy, focus
+    features/ask/              useAsk (state) and the assistant panel (lazy)
+    lib/                       api, storage, announcer, hooks (useAir, useBrief, useReadAloud), prefs, what-if, lazy, focus
     styles/                    tokens.css, base.css, print.css
 api/index.ts                   Vercel serverless entry (same Express app)
 tests/                         unit, property, api, components, e2e, helpers

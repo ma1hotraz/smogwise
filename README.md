@@ -98,9 +98,13 @@ tests/        unit, property, api, components, e2e
 - ESLint strict-type-checked + jsx-a11y strict, **zero warnings**; complexity ≤ 10, functions ≤ 40
   lines, files ≤ 250 lines; layer boundaries and engine purity (`Date.now`, `Math.random`, `fetch`
   banned in the engine) are **lint-enforced** ([`eslint.config.js`](eslint.config.js)).
+- Single responsibility in the UI: components only render; data, state and announcements live
+  in view-model hooks (`usePlanModel`, `useBrief`, `useAsk`, `useReadAloud`, `useAir`).
+- No dead code (knip) and **zero duplicated blocks** (jscpd), both enforced in CI; colour tokens
+  are defined once for both themes with CSS `light-dark()`.
 - Dependency injection for fetch, AI, clock and logger; copy kept apart from logic
   ([`src/shared/engine/data/copy.ts`](src/shared/engine/data/copy.ts)); every constant cites its source.
-- CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint, format, typecheck, tests with
+- CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint, dead code (knip), duplication (jscpd, zero clones), format, typecheck, tests with
   coverage gates, build, bundle budgets, `npm audit`, Playwright and gitleaks. Pre-commit hook in `.githooks/`.
 
 ### Security — details in [SECURITY.md](SECURITY.md)
@@ -139,9 +143,9 @@ npm test          # Vitest with coverage gates (fails below them)
 npm run test:e2e  # Playwright on the production build, no API key, upstream routed to fixtures
 ```
 
-**342** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
-Coverage: **99.9 % statements · 97.2 % branches · 99.5 % functions · 100 % lines**; the decision
-engine is at 100 %. Property tests (fast-check, 500 runs each) prove: the index is monotonic; a
+**345** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
+Coverage: **100 % statements · 100 % functions · 100 % lines · 97.3 % branches**; the
+decision engine is at 100 % on every measure. Property tests (fast-check, 500 runs each) prove: the index is monotonic; a
 purifier, an N95 or removing an indoor source never increases dose; the clean window is never
 beaten; `buildPlan` never throws. The property suite found a real modelling edge case — sealing a
 home raises indoor PM2.5 when outdoor air is cleaner — so hacks are now shown only when they help.

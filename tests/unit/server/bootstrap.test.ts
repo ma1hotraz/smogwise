@@ -38,6 +38,13 @@ describe('bootstrap', () => {
     expect(lines.join('')).not.toContain('secret prompt text');
   });
 
+  it('wires the real fetch into the upstream client (network is disabled in tests, so 502)', async () => {
+    const { app } = bootstrap({ NODE_ENV: 'test' });
+    const res = await request(app).get('/api/air').query({ lat: 1, lon: 1 });
+    expect(res.status).toBe(502);
+    expect(res.body).toEqual({ error: 'upstream_unavailable' });
+  });
+
   it('uses the disabled client without a key', async () => {
     const { app, ai } = bootstrap({ NODE_ENV: 'test' });
     expect(ai.enabled).toBe(false);

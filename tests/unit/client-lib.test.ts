@@ -10,6 +10,9 @@ import {
   scaleName,
   tierName,
 } from '../../src/client/lib/labels.js';
+import { renderHook } from '@testing-library/preact';
+
+import { useAnnounce } from '../../src/client/lib/announcer.js';
 import { canSpeak } from '../../src/client/lib/speech.js';
 import {
   forgetEverything,
@@ -165,6 +168,13 @@ describe('labels, geo and speech', () => {
     expect(
       placeLabel({ name: 'Your area', countryCode: 'ZZ', lat: 1, lon: 1, timezone: 'UTC' }),
     ).toBe('Your area');
+  });
+
+  it('announcing outside the provider is a harmless no-op', () => {
+    const { result } = renderHook(() => useAnnounce());
+    expect(() => {
+      result.current('hello');
+    }).not.toThrow();
   });
 
   it('detects speech support', () => {

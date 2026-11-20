@@ -35,7 +35,7 @@ export function captureLogger(): Logger & { lines: Captured[] } {
   return { lines, log: (level, msg, fields = {}) => lines.push({ level, msg, fields }) };
 }
 
-export const GEOCODE_BODY = {
+const GEOCODE_BODY = {
   results: [
     {
       name: 'Delhi',
@@ -91,7 +91,7 @@ export function fakeFetch(
   return Object.assign(fn, { urls });
 }
 
-export const TEST_CONFIG: Config = {
+const TEST_CONFIG: Config = {
   port: 0,
   geminiApiKey: undefined,
   geminiModel: 'test-model',

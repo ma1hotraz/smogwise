@@ -18,7 +18,7 @@ import { UpstreamError, type OpenMeteo } from './upstream/openMeteo.js';
 
 const AIR_TTL_MS = 30 * 60_000;
 const GEOCODE_TTL_MS = 24 * 60 * 60_000;
-export const VERSION = '1.0.0';
+const VERSION = '1.0.0';
 
 export interface RouteDeps {
   upstream: OpenMeteo;

@@ -5,7 +5,7 @@ import { SAMPLES } from '../../src/shared/samples.js';
 
 /** 2026-11-20 10:30 in Delhi (UTC+5:30). */
 export const NOW = new Date('2026-11-20T05:00:00Z');
-export const DATE = '2026-11-20';
+const DATE = '2026-11-20';
 
 export function sample(id: string): Profile {
   const found = SAMPLES.find((s) => s.id === id);

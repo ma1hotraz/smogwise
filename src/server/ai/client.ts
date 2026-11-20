@@ -36,7 +36,7 @@ export class DisabledAiClient implements AiClient {
   }
 }
 
-export const DEFAULT_MAX_RETRIES = 1;
+const DEFAULT_MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 600;
 const RETRYABLE = (status: number): boolean => status === 429 || status >= 500;
 
