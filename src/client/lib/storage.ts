@@ -7,9 +7,9 @@ import * as z from 'zod/mini';
 import { AirData } from '../../shared/schema/air.js';
 import { Profile } from '../../shared/schema/profile.js';
 
-const PROFILE_KEY = 'smogwise.profile.v1';
-const PREFS_KEY = 'smogwise.prefs.v1';
-const AIR_PREFIX = 'smogwise.air.';
+const PROFILE_ITEM = 'smogwise.profile.v1';
+const PREFS_ITEM = 'smogwise.prefs.v1';
+const AIR_ITEM_PREFIX = 'smogwise.air.';
 const AIR_MAX_AGE_MS = 30 * 60_000;
 
 export const Prefs = z.object({
@@ -40,24 +40,24 @@ function write(storage: Storage, key: string, value: unknown): void {
 
 /** The saved profile, or null when missing or invalid. */
 export function loadProfile(): Profile | null {
-  const parsed = Profile.safeParse(read(localStorage, PROFILE_KEY));
+  const parsed = Profile.safeParse(read(localStorage, PROFILE_ITEM));
   return parsed.success ? parsed.data : null;
 }
 
 export function saveProfile(profile: Profile): void {
-  write(localStorage, PROFILE_KEY, profile);
+  write(localStorage, PROFILE_ITEM, profile);
 }
 
 export function loadPrefs(): Prefs {
-  const parsed = Prefs.safeParse(read(localStorage, PREFS_KEY));
+  const parsed = Prefs.safeParse(read(localStorage, PREFS_ITEM));
   return parsed.success ? parsed.data : DEFAULT_PREFS;
 }
 
 export function savePrefs(prefs: Prefs): void {
-  write(localStorage, PREFS_KEY, prefs);
+  write(localStorage, PREFS_ITEM, prefs);
 }
 
-const airKey = (lat: number, lon: number): string => `${AIR_PREFIX}${lat},${lon}`;
+const airKey = (lat: number, lon: number): string => `${AIR_ITEM_PREFIX}${lat},${lon}`;
 
 /** Live air data cached for this tab for 30 minutes per 0.1° cell. */
 export function loadCachedAir(lat: number, lon: number, now: number): AirData | null {
