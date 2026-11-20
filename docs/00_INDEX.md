@@ -1,0 +1,51 @@
+# Smogwise — Doc Pack Index
+
+> **Smogwise** (smog + wise) — a GenAI-powered clean-air companion that helps families and
+> communities get through severe winter smog. It reads the live air forecast for _your_ location,
+> combines it with _your_ household and lifestyle, and produces a low-emission daily routine,
+> indoor air hacks and sustainable swaps — each with a number that shows the direct impact of
+> the choice.
+
+**Challenge:** [Challenge 6] Urban Air Quality Assistant
+**Target:** 100 in every evaluation parameter.
+
+---
+
+## Doc map — every document serves a scored parameter
+
+| #   | File                    | Defines                                                    | Parameter served                      |
+| --- | ----------------------- | ---------------------------------------------------------- | ------------------------------------- |
+| 01  | `01_PRODUCT_SPEC.md`    | Problem, personas, features, flows, acceptance criteria    | Problem Statement Alignment           |
+| 02  | `02_ARCHITECTURE.md`    | Stack, folders, data models, API contracts, decisions      | Code Quality, Efficiency              |
+| 03  | `03_DECISION_ENGINE.md` | Deterministic rules, formulas, constants and their sources | Alignment ("logical decision making") |
+| 04  | `04_AI_INTEGRATION.md`  | Gemini prompts, schemas, guardrails, fallbacks             | Alignment, Security                   |
+| 05  | `05_SECURITY.md`        | Threat model and mandatory controls                        | Security                              |
+| 06  | `06_ACCESSIBILITY.md`   | WCAG 2.2 AA requirements per component                     | Accessibility                         |
+| 07  | `07_TESTING.md`         | Test pyramid, required cases, coverage gates               | Testing                               |
+| 08  | `08_EFFICIENCY.md`      | Budgets, caching, payload and runtime limits               | Efficiency                            |
+| 09  | `09_CODE_QUALITY.md`    | Conventions, lint rules, size limits, CI, review checklist | Code Quality                          |
+| 10  | `10_BUILD_PLAN.md`      | Ordered phases, verification gates, submission checklist   | All                                   |
+
+---
+
+## Lessons carried over from Challenge 5 (Mehfil, ~97%)
+
+Mehfil was strong. These are the gaps an automated reviewer could still find, and how this
+project closes each of them:
+
+| Gap in Challenge 5                                                      | Fix in Challenge 6                                                                                   |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Docs mentioned a CI secret scan, but `.github/workflows/` did not exist | Real `ci.yml`: lint, format, typecheck, tests + coverage, build, bundle budget, audit, e2e, gitleaks |
+| React 19 + three self-hosted variable fonts (≈160 kB of fonts)          | Preact (~4 kB) and the system font stack: **0 bytes of web fonts**                                   |
+| Static domain data only                                                 | Live, location-specific air-quality forecast (Open-Meteo, no key), cached and validated server-side  |
+| Some claims were hard to verify from the repo alone                     | Every README claim links to a file; numbers in the README are produced by scripts or tests           |
+| Large surface (280 files) for a reviewer to sample                      | Smaller, flatter tree; every module has one job and a TSDoc header                                   |
+| Build-time-only packages listed alongside runtime ones                  | Runtime `dependencies` are only what the server executes; everything else is `devDependencies`       |
+
+## Core design principle
+
+**Rules for numbers, AI for words.** Every number the user sees — air-quality band, clean-air
+window, inhaled dose, kg of CO₂, grams of PM2.5 — comes from a pure, tested decision engine with
+named rules and cited constants. Gemini explains the plan in plain language, answers questions
+about it and adapts tone and language. It never invents a number. If the model is down or no key
+is set, the app still works end to end with deterministic answers.
