@@ -12,7 +12,7 @@ import { loadCachedAir, saveCachedAir } from './storage.js';
 
 export type AirStatus = 'loading' | 'live' | 'estimated' | 'manual';
 
-export interface AirState {
+interface AirState {
   air: AirData;
   status: AirStatus;
 }

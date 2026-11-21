@@ -1,10 +1,11 @@
+/** Express app assembly: security middleware, API routes, static client and error handling. */
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 
 import type { AiClient } from './ai/client.js';
-import { createAiService } from './ai/service.js';
+import { createGeminiService, rulesService, type AiService } from './ai/service.js';
 import type { Clock } from './clock.js';
 import type { Config } from './config.js';
 import type { Logger } from './logger.js';
@@ -21,7 +22,7 @@ import { setRequestId } from './requestId.js';
 import { apiRouter } from './routes.js';
 import type { OpenMeteo } from './upstream/openMeteo.js';
 
-export interface AppDeps {
+interface AppDeps {
   ai: AiClient;
   upstream: OpenMeteo;
   clock: Clock;
@@ -67,9 +68,22 @@ function serveClient(app: Express, staticDir: string): void {
   });
 }
 
+/** Chooses the assistant once, at start-up: Gemini when a model is configured, otherwise rules. */
+function aiService({ ai, logger, config, clock }: AppDeps): AiService {
+  return ai.enabled
+    ? createGeminiService({
+        ai,
+        logger,
+        timeoutMs: config.aiTimeoutMs,
+        maxEntries: config.cacheMaxEntries,
+        now: () => clock.now().getTime(),
+      })
+    : rulesService;
+}
+
 /**
- * Builds the Express app. Everything with side effects (AI, upstream fetch, clock, logger,
- * config) is injected so tests run the real app with fakes and no network.
+ * Builds the Express app. The external dependencies (AI client, upstream fetch, clock, logger,
+ * config) are injected so tests run the real app with fakes and no network.
  */
 export function createApp(deps: AppDeps): Express {
   const { ai, upstream, clock, logger, config } = deps;
@@ -87,13 +101,7 @@ export function createApp(deps: AppDeps): Express {
     '/api',
     apiRouter({
       upstream,
-      ai: createAiService({
-        ai,
-        logger,
-        timeoutMs: config.aiTimeoutMs,
-        maxEntries: config.cacheMaxEntries,
-        now: () => clock.now().getTime(),
-      }),
+      ai: aiService(deps),
       aiEnabled: ai.enabled,
       clock,
       logger,

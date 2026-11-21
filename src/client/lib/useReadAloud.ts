@@ -3,7 +3,7 @@ import { useState } from 'preact/hooks';
 
 import { canSpeak, speak, stopSpeaking } from './speech.js';
 
-export interface ReadAloud {
+interface ReadAloud {
   supported: boolean;
   speaking: boolean;
   toggle: (text: string, lang: string) => void;

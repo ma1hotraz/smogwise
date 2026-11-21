@@ -1,10 +1,10 @@
 /** Home air: modelled indoor PM2.5, purifier verdict and ranked hacks with what-if toggles (F3). */
-import type { Choices, Plan, PurifierVerdict } from '../../../shared/engine/types.js';
+import type { Choices, Cost, Plan, PurifierVerdict } from '../../../shared/engine/types.js';
 import { CheckField } from '../../components/Fields.js';
 import { DoseMeter } from '../../components/PlanBits.js';
-import { hackIsOn, toggleHack } from '../../lib/whatIf.js';
+import { hackIsOn, toggleHack } from '../../../shared/engine/whatIf.js';
 
-const COST: Record<string, string> = {
+const COST: Record<Cost, string> = {
   free: 'Free',
   low: 'Low cost',
   medium: 'Costs more',
@@ -53,7 +53,7 @@ export function HomePanel({ plan, choices, onChoices }: PanelProps) {
                   <strong>−{hack.reductionPct}%</strong> indoor PM2.5
                 </li>
               ) : null}
-              {COST[hack.cost] ? <li>{COST[hack.cost]}</li> : null}
+              {hack.cost === 'none' ? null : <li>{COST[hack.cost]}</li>}
               <li class="rule">Rule {hack.ruleId}</li>
             </ul>
             {hack.choice ? (

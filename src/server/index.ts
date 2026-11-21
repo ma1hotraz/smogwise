@@ -1,3 +1,5 @@
+/** Node entry: starts the HTTP server with timeouts and graceful shutdown. */
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,10 +10,11 @@ const REQUEST_TIMEOUT_MS = 30_000;
 const HEADERS_TIMEOUT_MS = 10_000;
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const isProduction = process.env.NODE_ENV === 'production';
+// The bundled server sits next to the built client in dist/; in development Vite serves it.
+const clientDir = path.resolve(here, 'client');
 const { app, config, logger, ai } = bootstrap(
   process.env,
-  isProduction ? path.resolve(here, 'client') : undefined,
+  existsSync(path.join(clientDir, 'index.html')) ? clientDir : undefined,
 );
 
 const server = app.listen(config.port, '0.0.0.0', () => {

@@ -6,7 +6,7 @@ import { burnsFuelIndoors } from './data/factors.js';
 import { SENSITIVE_LABELS } from './risk.js';
 import type { Alert, AlertLevel, RuleId, SensitiveGroup, Tier } from './types.js';
 
-export interface AlertContext {
+interface AlertContext {
   lifestyle: Lifestyle;
   household: Household;
   sensitive: readonly SensitiveGroup[];

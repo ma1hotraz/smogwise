@@ -12,14 +12,14 @@ const PREFS_ITEM = 'smogwise.prefs.v1';
 const AIR_ITEM_PREFIX = 'smogwise.air.';
 const AIR_MAX_AGE_MS = 30 * 60_000;
 
-export const Prefs = z.object({
+export const Prefs = z.strictObject({
   theme: z.enum(['system', 'light', 'dark']),
   textSize: z.enum(['100', '115', '130']),
 });
 export type Prefs = z.infer<typeof Prefs>;
 const DEFAULT_PREFS: Prefs = { theme: 'system', textSize: '100' };
 
-const CachedAir = z.object({ savedAt: z.number(), air: AirData });
+const CachedAir = z.strictObject({ savedAt: z.number(), air: AirData });
 
 function read(storage: Storage, key: string): unknown {
   try {

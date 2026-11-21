@@ -1,12 +1,24 @@
-/** Household and travel fieldsets of the intake form (docs/01 F1). */
+/** Household and travel fieldsets of the intake form (docs/01 F1), driven by field tables. */
 import { CheckField, NumberField, SelectField } from '../../components/Fields.js';
-import { HOUR_OPTIONS, MODE_OPTIONS } from '../../lib/labels.js';
+import { EXERCISE_OPTIONS, HOUR_OPTIONS, MODE_OPTIONS } from '../../lib/labels.js';
 import type { Household, Lifestyle } from '../../../shared/schema/profile.js';
+import type { HouseholdProps, LifestyleProps } from './fieldProps.js';
 
-interface HouseholdProps {
-  value: Household;
-  onChange: (next: Household) => void;
-}
+type CountKey = 'adults' | 'over65' | 'under5' | 'children';
+type FlagKey = 'pregnant' | 'respiratory' | 'heart';
+
+const COUNTS: readonly { key: CountKey; label: string; max: number }[] = [
+  { key: 'adults', label: 'Adults (18–64)', max: 12 },
+  { key: 'over65', label: 'Adults over 65', max: 8 },
+  { key: 'under5', label: 'Children under 5', max: 8 },
+  { key: 'children', label: 'Children 5–17', max: 10 },
+];
+
+const FLAGS: readonly { key: FlagKey; label: string }[] = [
+  { key: 'pregnant', label: 'Someone is pregnant' },
+  { key: 'respiratory', label: 'Someone has asthma or COPD' },
+  { key: 'heart', label: 'Someone has a heart condition' },
+];
 
 export function HouseholdFields({ value, onChange }: HouseholdProps) {
   const set = (patch: Partial<Household>): void => {
@@ -16,169 +28,135 @@ export function HouseholdFields({ value, onChange }: HouseholdProps) {
     <fieldset>
       <legend>Who lives here</legend>
       <div class="grid-2">
-        <NumberField
-          id="adults"
-          label="Adults (18–64)"
-          value={value.adults}
-          min={0}
-          max={12}
-          onChange={(adults) => {
-            set({ adults });
-          }}
-        />
-        <NumberField
-          id="over65"
-          label="Adults over 65"
-          value={value.over65}
-          min={0}
-          max={8}
-          onChange={(over65) => {
-            set({ over65 });
-          }}
-        />
-        <NumberField
-          id="under5"
-          label="Children under 5"
-          value={value.under5}
-          min={0}
-          max={8}
-          onChange={(under5) => {
-            set({ under5 });
-          }}
-        />
-        <NumberField
-          id="children"
-          label="Children 5–17"
-          value={value.children}
-          min={0}
-          max={10}
-          onChange={(children) => {
-            set({ children });
-          }}
-        />
+        {COUNTS.map(({ key, label, max }) => (
+          <NumberField
+            key={key}
+            id={key}
+            label={label}
+            value={value[key]}
+            min={0}
+            max={max}
+            onChange={(n) => {
+              set({ [key]: n });
+            }}
+          />
+        ))}
       </div>
-      <CheckField
-        id="pregnant"
-        checked={value.pregnant}
-        onChange={(pregnant) => {
-          set({ pregnant });
-        }}
-      >
-        Someone is pregnant
-      </CheckField>
-      <CheckField
-        id="respiratory"
-        checked={value.respiratory}
-        onChange={(respiratory) => {
-          set({ respiratory });
-        }}
-      >
-        Someone has asthma or COPD
-      </CheckField>
-      <CheckField
-        id="heart"
-        checked={value.heart}
-        onChange={(heart) => {
-          set({ heart });
-        }}
-      >
-        Someone has a heart condition
-      </CheckField>
+      {FLAGS.map(({ key, label }) => (
+        <CheckField
+          key={key}
+          id={key}
+          checked={value[key]}
+          onChange={(on) => {
+            set({ [key]: on });
+          }}
+        >
+          {label}
+        </CheckField>
+      ))}
     </fieldset>
   );
 }
 
-export interface LifestyleProps {
-  value: Lifestyle;
-  onChange: (next: Lifestyle) => void;
+function CommuteFields({ value, onChange }: LifestyleProps) {
+  const set = (patch: Partial<Lifestyle['commute']>): void => {
+    onChange({ ...value, commute: { ...value.commute, ...patch } });
+  };
+  const { commute } = value;
+  return (
+    <>
+      <SelectField
+        id="mode"
+        label="Usual commute"
+        value={commute.mode}
+        options={MODE_OPTIONS}
+        onChange={(mode) => {
+          set({ mode });
+        }}
+      />
+      <NumberField
+        id="km"
+        label="One-way distance"
+        unit="km"
+        value={commute.km}
+        min={0}
+        max={80}
+        step={0.5}
+        onChange={(km) => {
+          set({ km });
+        }}
+      />
+      <NumberField
+        id="days"
+        label="Commute days a week"
+        value={commute.daysPerWeek}
+        min={0}
+        max={7}
+        onChange={(daysPerWeek) => {
+          set({ daysPerWeek });
+        }}
+      />
+      <SelectField
+        id="depart"
+        label="Usually leave at"
+        value={String(commute.departHour)}
+        options={HOUR_OPTIONS}
+        onChange={(h) => {
+          set({ departHour: Number(h) });
+        }}
+      />
+    </>
+  );
 }
 
-export function TravelFields({ value, onChange }: LifestyleProps) {
-  const { commute, exercise } = value;
-  const setCommute = (patch: Partial<Lifestyle['commute']>): void => {
-    onChange({ ...value, commute: { ...commute, ...patch } });
+function ExerciseFields({ value, onChange }: LifestyleProps) {
+  const set = (patch: Partial<Lifestyle['exercise']>): void => {
+    onChange({ ...value, exercise: { ...value.exercise, ...patch } });
   };
-  const setExercise = (patch: Partial<Lifestyle['exercise']>): void => {
-    onChange({ ...value, exercise: { ...exercise, ...patch } });
-  };
+  const { exercise } = value;
+  return (
+    <>
+      <SelectField
+        id="exercise"
+        label="Exercise"
+        value={exercise.kind}
+        options={EXERCISE_OPTIONS}
+        onChange={(kind) => {
+          set({ kind });
+        }}
+      />
+      <SelectField
+        id="exercise-hour"
+        label="Usually at"
+        value={String(exercise.hour)}
+        options={HOUR_OPTIONS}
+        onChange={(h) => {
+          set({ hour: Number(h) });
+        }}
+      />
+      <NumberField
+        id="exercise-minutes"
+        label="For"
+        unit="minutes"
+        value={exercise.minutes}
+        min={0}
+        max={180}
+        step={5}
+        onChange={(minutes) => {
+          set({ minutes });
+        }}
+      />
+    </>
+  );
+}
+
+export function TravelFields(props: LifestyleProps) {
   return (
     <fieldset>
       <legend>Getting around and staying active</legend>
       <div class="grid-2">
-        <SelectField
-          id="mode"
-          label="Usual commute"
-          value={commute.mode}
-          options={MODE_OPTIONS}
-          onChange={(mode) => {
-            setCommute({ mode });
-          }}
-        />
-        <NumberField
-          id="km"
-          label="One-way distance"
-          unit="km"
-          value={commute.km}
-          min={0}
-          max={80}
-          step={0.5}
-          onChange={(km) => {
-            setCommute({ km });
-          }}
-        />
-        <NumberField
-          id="days"
-          label="Commute days a week"
-          value={commute.daysPerWeek}
-          min={0}
-          max={7}
-          onChange={(daysPerWeek) => {
-            setCommute({ daysPerWeek });
-          }}
-        />
-        <SelectField
-          id="depart"
-          label="Usually leave at"
-          value={String(commute.departHour)}
-          options={HOUR_OPTIONS}
-          onChange={(h) => {
-            setCommute({ departHour: Number(h) });
-          }}
-        />
-        <SelectField
-          id="exercise"
-          label="Exercise"
-          value={exercise.kind}
-          options={[
-            { value: 'none', label: 'None most days' },
-            { value: 'outdoor', label: 'Outdoors (walk, run, cycle, yoga in the park)' },
-            { value: 'indoor', label: 'Indoors (home, gym)' },
-          ]}
-          onChange={(kind) => {
-            setExercise({ kind });
-          }}
-        />
-        <SelectField
-          id="exercise-hour"
-          label="Usually at"
-          value={String(exercise.hour)}
-          options={HOUR_OPTIONS}
-          onChange={(h) => {
-            setExercise({ hour: Number(h) });
-          }}
-        />
-        <NumberField
-          id="exercise-minutes"
-          label="For"
-          unit="minutes"
-          value={exercise.minutes}
-          min={0}
-          max={180}
-          step={5}
-          onChange={(minutes) => {
-            setExercise({ minutes });
-          }}
-        />
+        <CommuteFields {...props} />
+        <ExerciseFields {...props} />
       </div>
     </fieldset>
   );

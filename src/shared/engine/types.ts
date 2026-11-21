@@ -143,6 +143,7 @@ export interface CommunityAction {
 /** What-if toggles (docs/03 "Choices"). Absent fields mean "as in the profile". */
 export interface Choices {
   mode?: CommuteMode;
+  /** Emissions-only swaps (no effect on the household's own dose); read by community scaling. */
   carpool?: boolean;
   wfhDays?: number;
   n95?: boolean;

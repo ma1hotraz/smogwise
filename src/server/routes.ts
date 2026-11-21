@@ -15,12 +15,13 @@ import { TtlCache } from './cache.js';
 import type { Clock } from './clock.js';
 import type { Logger } from './logger.js';
 import { UpstreamError, type OpenMeteo } from './upstream/openMeteo.js';
+import { sendError } from './httpErrors.js';
 
 const AIR_TTL_MS = 30 * 60_000;
 const GEOCODE_TTL_MS = 24 * 60 * 60_000;
 const VERSION = '1.0.0';
 
-export interface RouteDeps {
+interface RouteDeps {
   upstream: OpenMeteo;
   ai: AiService;
   aiEnabled: boolean;
@@ -35,7 +36,7 @@ export interface RouteDeps {
 function parse<T>(schema: z.ZodMiniType<T>, value: unknown, res: Response): T | undefined {
   const result = schema.safeParse(value);
   if (!result.success) {
-    res.status(400).json({ error: 'invalid_request' });
+    sendError(res, 'invalid_request');
     return undefined;
   }
   return result.data;
@@ -52,7 +53,7 @@ async function upstreamOr502<T>(
   } catch (error) {
     const reason = error instanceof UpstreamError ? error.message : 'unknown';
     logger.log('warn', 'upstream_failed', { reason });
-    res.status(502).json({ error: 'upstream_unavailable' });
+    sendError(res, 'upstream_unavailable');
   }
 }
 

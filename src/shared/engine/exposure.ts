@@ -4,6 +4,7 @@ import { cigarettesFor } from './aqi.js';
 import { DAY, MODES, N95_FACTOR, RATE } from './data/factors.js';
 import { indoorPm, type HomeState } from './indoor.js';
 import type { Dose, Place } from './types.js';
+import { round } from '../time.js';
 
 const PLACES: readonly Place[] = ['sleep', 'home', 'work', 'commute', 'exercise'];
 const MAX_COMMUTE_MIN = 180;
@@ -58,7 +59,7 @@ export function schedule(lifestyle: Lifestyle, commuting: boolean): Schedule {
   return plan;
 }
 
-export interface DoseInput {
+interface DoseInput {
   /** Ambient PM2.5 for local hours 0–23. */
   ambient: readonly number[];
   lifestyle: Lifestyle;
@@ -111,7 +112,7 @@ export function doseFor(input: DoseInput): Dose {
   }
   return {
     totalUg: Math.round(totalUg),
-    volumeM3: Math.round(volume * 10) / 10,
+    volumeM3: round(volume, 1),
     byPlace,
     cigarettes: cigarettesFor(totalUg / volume),
   };

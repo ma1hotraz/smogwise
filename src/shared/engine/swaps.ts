@@ -14,7 +14,7 @@ import { doseFor, percentChange } from './exposure.js';
 import { homeState } from './indoor.js';
 import type { Choices, RuleId, Swap } from './types.js';
 
-export interface SwapContext {
+interface SwapContext {
   lifestyle: Lifestyle;
   ambient: readonly number[];
   countryCode: string;

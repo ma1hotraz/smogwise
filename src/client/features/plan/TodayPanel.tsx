@@ -1,13 +1,18 @@
 /** Today: the hour strip, safety alerts, dose, the AI brief and the time-slotted routine (F2). */
 import type { Plan } from '../../../shared/engine/types.js';
-import type { AiContext } from '../../../shared/schema/ai.js';
+import type { AiContext, BriefResponse } from '../../../shared/schema/ai.js';
 import { formatHour } from '../../../shared/time.js';
 import { HourStrip } from '../../components/AirVisuals.js';
 import { AlertList, DoseMeter } from '../../components/PlanBits.js';
 import { useBrief } from '../../lib/useBrief.js';
 import { useReadAloud } from '../../lib/useReadAloud.js';
 
-/** The AI brief. It waits until live data has arrived, so one visit costs one model call. */
+const BRIEF_SOURCE_TEXT: Record<BriefResponse['source'], string> = {
+  gemini: 'Written by Gemini from your plan’s figures.',
+  rules: 'Written from your plan’s rules.',
+};
+
+/** The AI brief (see useBrief) with read-aloud. */
 function Brief({ context, ready }: { context: AiContext; ready: boolean }) {
   const brief = useBrief(context, ready);
   const reader = useReadAloud();
@@ -19,11 +24,7 @@ function Brief({ context, ready }: { context: AiContext; ready: boolean }) {
       <h2 id="brief-title">{brief.headline}</h2>
       <p>{brief.summary}</p>
       <p class="status-line">
-        <span>
-          {brief.source === 'gemini'
-            ? 'Written by Gemini from your plan’s figures.'
-            : 'Written from your plan’s rules.'}
-        </span>
+        <span>{BRIEF_SOURCE_TEXT[brief.source]}</span>
         {reader.supported ? (
           <button
             class="button button-quiet button-small"

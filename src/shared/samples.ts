@@ -1,20 +1,12 @@
 /** The four sample profiles from docs/01 §2: one click shows a complete plan. */
-import type { Profile } from './schema/profile.js';
+import { NO_INDOOR_SOURCES, type Profile } from './schema/profile.js';
 
-export interface Sample {
+interface Sample {
   id: string;
   label: string;
   summary: string;
   profile: Profile;
 }
-
-const NO_SOURCES = {
-  smoking: false,
-  incense: false,
-  mosquitoCoil: false,
-  candles: false,
-  drySweeping: false,
-};
 
 export const SAMPLES: readonly Sample[] = [
   {
@@ -46,7 +38,7 @@ export const SAMPLES: readonly Sample[] = [
         cooking: 'lpg',
         heating: 'none',
         home: { tightness: 'leaky', roomM2: 16, purifierCadr: 0 },
-        sources: { ...NO_SOURCES, incense: true, drySweeping: true },
+        sources: { ...NO_INDOOR_SOURCES, incense: true, drySweeping: true },
         burnsWaste: false,
       },
     },
@@ -80,7 +72,7 @@ export const SAMPLES: readonly Sample[] = [
         cooking: 'lpg',
         heating: 'wood',
         home: { tightness: 'average', roomM2: 12, purifierCadr: 0 },
-        sources: { ...NO_SOURCES, mosquitoCoil: true },
+        sources: { ...NO_INDOOR_SOURCES, mosquitoCoil: true },
         burnsWaste: false,
       },
     },
@@ -114,7 +106,7 @@ export const SAMPLES: readonly Sample[] = [
         cooking: 'induction',
         heating: 'electric',
         home: { tightness: 'sealed', roomM2: 20, purifierCadr: 400 },
-        sources: NO_SOURCES,
+        sources: NO_INDOOR_SOURCES,
         burnsWaste: false,
       },
     },
@@ -148,7 +140,7 @@ export const SAMPLES: readonly Sample[] = [
         cooking: 'lpg',
         heating: 'brazier',
         home: { tightness: 'average', roomM2: 18, purifierCadr: 150 },
-        sources: { ...NO_SOURCES, smoking: true },
+        sources: { ...NO_INDOOR_SOURCES, smoking: true },
         burnsWaste: true,
       },
     },

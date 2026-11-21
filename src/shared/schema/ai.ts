@@ -3,6 +3,7 @@ import * as z from 'zod/mini';
 
 import { AirSource } from './air.js';
 import { CommuteMode, PLACE_NAME } from './profile.js';
+import { MAX_QUESTION_CHARS } from '../limits.js';
 
 const RULE_ID = /^(?:A|L|H|E|R|S|C|AL)\d{2}$/;
 const ruleId = z.string().check(z.regex(RULE_ID));
@@ -52,7 +53,7 @@ export type Language = z.infer<typeof Language>;
 export const BriefRequest = z.strictObject({ context: AiContext });
 
 export const AskRequest = z.strictObject({
-  question: z.string().check(z.trim(), z.minLength(1), z.maxLength(400)),
+  question: z.string().check(z.trim(), z.minLength(1), z.maxLength(MAX_QUESTION_CHARS)),
   context: AiContext,
   language: Language,
 });
@@ -61,11 +62,11 @@ export type AskRequest = z.infer<typeof AskRequest>;
 const text = (max: number) => z.string().check(z.minLength(1), z.maxLength(max));
 
 /** What the model must return for the daily brief. */
-export const BriefOutput = z.object({ headline: text(90), summary: text(600) });
+export const BriefOutput = z.strictObject({ headline: text(90), summary: text(600) });
 export type BriefOutput = z.infer<typeof BriefOutput>;
 
 /** What the model must return for a question. */
-export const AnswerOutput = z.object({
+export const AnswerOutput = z.strictObject({
   answer: text(1200),
   citedRuleIds: z.array(ruleId).check(z.maxLength(6)),
   followUps: z.array(text(90)).check(z.maxLength(3)),
@@ -73,9 +74,12 @@ export const AnswerOutput = z.object({
 export type AnswerOutput = z.infer<typeof AnswerOutput>;
 
 /** Server replies, validated again in the browser before rendering. */
-export const BriefReply = z.object({ ...BriefOutput.shape, source: z.enum(['gemini', 'rules']) });
+export const BriefReply = z.strictObject({
+  ...BriefOutput.shape,
+  source: z.enum(['gemini', 'rules']),
+});
 export type BriefResponse = z.infer<typeof BriefReply>;
-export const AskReply = z.object({
+export const AskReply = z.strictObject({
   ...AnswerOutput.shape,
   source: z.enum(['gemini', 'rules', 'safety']),
 });

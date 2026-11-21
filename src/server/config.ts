@@ -1,3 +1,4 @@
+/** Environment configuration, validated with zod; secrets are never printed. */
 import * as z from 'zod/mini';
 
 const positiveInt = (fallback: number) =>

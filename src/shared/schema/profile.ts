@@ -3,6 +3,7 @@
  * tampered or outdated value is discarded instead of reaching the engine.
  */
 import * as z from 'zod/mini';
+import { MAX_CADR } from '../limits.js';
 
 const count = (max: number) => z.int().check(z.gte(0), z.lte(max));
 const hour = z.int().check(z.gte(0), z.lte(23));
@@ -44,10 +45,19 @@ export const INDOOR_SOURCES = [
 ] as const;
 export type IndoorSource = (typeof INDOOR_SOURCES)[number];
 
+/** A home with none of the indoor sources: the default for new profiles and samples. */
+export const NO_INDOOR_SOURCES: Record<IndoorSource, false> = {
+  smoking: false,
+  incense: false,
+  mosquitoCoil: false,
+  candles: false,
+  drySweeping: false,
+};
+
 /** Place names allow any script (Devanagari, Urdu, Han…) plus common punctuation. */
 export const PLACE_NAME = /^[\p{L}\p{M}\p{N} .,'()-]{1,80}$/u;
 
-export const Location = z.object({
+export const Location = z.strictObject({
   name: z.string().check(z.regex(PLACE_NAME)),
   admin1: z.optional(z.string().check(z.regex(PLACE_NAME))),
   countryCode: z.string().check(z.regex(/^[A-Z]{2}$/)),
@@ -57,7 +67,7 @@ export const Location = z.object({
 });
 export type Location = z.infer<typeof Location>;
 
-export const Household = z.object({
+export const Household = z.strictObject({
   adults: count(12),
   under5: count(8),
   children: count(10),
@@ -68,26 +78,26 @@ export const Household = z.object({
 });
 export type Household = z.infer<typeof Household>;
 
-export const Lifestyle = z.object({
-  commute: z.object({
+export const Lifestyle = z.strictObject({
+  commute: z.strictObject({
     mode: CommuteMode,
     km: z.number().check(z.gte(0), z.lte(80)),
     daysPerWeek: count(7),
     departHour: hour,
   }),
-  exercise: z.object({
+  exercise: z.strictObject({
     kind: z.enum(['none', 'outdoor', 'indoor']),
     hour,
     minutes: z.int().check(z.gte(0), z.lte(180)),
   }),
   cooking: CookingFuel,
   heating: Heating,
-  home: z.object({
+  home: z.strictObject({
     tightness: Tightness,
     roomM2: z.number().check(z.gte(6), z.lte(100)),
-    purifierCadr: z.number().check(z.gte(0), z.lte(2000)),
+    purifierCadr: z.number().check(z.gte(0), z.lte(MAX_CADR)),
   }),
-  sources: z.object({
+  sources: z.strictObject({
     smoking: z.boolean(),
     incense: z.boolean(),
     mosquitoCoil: z.boolean(),
@@ -98,7 +108,7 @@ export const Lifestyle = z.object({
 });
 export type Lifestyle = z.infer<typeof Lifestyle>;
 
-export const Profile = z.object({
+export const Profile = z.strictObject({
   version: z.literal(1),
   location: Location,
   household: Household,

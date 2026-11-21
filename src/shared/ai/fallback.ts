@@ -76,20 +76,30 @@ const RULES: Record<Intent, readonly RuleId[]> = {
   general: ['A03', 'A04'],
 };
 
+type WindowSummary = NonNullable<AiContext['cleanWindow']>;
+
+/** Clean-window sentences per language: with a window, and when none is left today. */
+const WINDOW_TEXT: Record<Language, { some: (w: WindowSummary) => string; none: string }> = {
+  en: {
+    some: (w) => `The cleanest time today is ${w.start}–${w.end}, at about ${w.pm25} µg/m³.`,
+    none: 'There is no cleaner window left today.',
+  },
+  hi: {
+    some: (w) => `आज सबसे साफ़ समय ${w.start}–${w.end} है (लगभग ${w.pm25} µg/m³)।`,
+    none: 'आज बाकी दिन में कोई साफ़ समय नहीं बचा है।',
+  },
+};
+
 function windowText(ctx: AiContext, language: Language): string {
-  const w = ctx.cleanWindow;
-  if (!w) {
-    return language === 'hi'
-      ? 'आज बाकी दिन में कोई साफ़ समय नहीं बचा है।'
-      : 'There is no cleaner window left today.';
-  }
-  return language === 'hi'
-    ? `आज सबसे साफ़ समय ${w.start}–${w.end} है (लगभग ${w.pm25} µg/m³)।`
-    : `The cleanest time today is ${w.start}–${w.end}, at about ${w.pm25} µg/m³.`;
+  const text = WINDOW_TEXT[language];
+  return ctx.cleanWindow ? text.some(ctx.cleanWindow) : text.none;
 }
 
+/** Whether today calls for the stricter advice (tier 3 "unhealthy" or worse). */
+const STRICT_FROM_TIER = 3;
+
 function bodyEn(intent: Intent, ctx: AiContext): string {
-  const bad = ctx.tier >= 3;
+  const bad = ctx.tier >= STRICT_FROM_TIER;
   const lines: Record<Intent, string> = {
     exercise: bad
       ? 'Move exercise indoors today: yoga, stairs or a home circuit. Hard breathing outside pulls smog deep into the lungs.'
@@ -116,7 +126,7 @@ function bodyEn(intent: Intent, ctx: AiContext): string {
 }
 
 function bodyHi(intent: Intent, ctx: AiContext): string {
-  const bad = ctx.tier >= 3;
+  const bad = ctx.tier >= STRICT_FROM_TIER;
   const lines: Record<Intent, string> = {
     exercise: bad
       ? 'आज व्यायाम घर के अंदर करें — योग, सीढ़ियाँ या घर पर कसरत।'
@@ -138,6 +148,12 @@ function bodyHi(intent: Intent, ctx: AiContext): string {
   return lines[intent];
 }
 
+/** Answer bodies per language: adding a language is one entry. */
+const BODIES: Record<Language, (intent: Intent, ctx: AiContext) => string> = {
+  en: bodyEn,
+  hi: bodyHi,
+};
+
 const FOLLOW_UPS: Record<Language, readonly string[]> = {
   en: ['When is the air cleanest today?', 'Do I need a mask?', 'Is my purifier big enough?'],
   hi: ['आज हवा कब सबसे साफ़ है?', 'क्या मुझे मास्क चाहिए?', 'क्या मेरा प्यूरीफायर काफ़ी है?'],
@@ -146,7 +162,7 @@ const FOLLOW_UPS: Record<Language, readonly string[]> = {
 /** Engine-backed answer chosen by keyword intent. */
 export function answerByIntent(question: string, ctx: AiContext, language: Language): AskResponse {
   const intent = detectIntent(question);
-  const body = language === 'hi' ? bodyHi(intent, ctx) : bodyEn(intent, ctx);
+  const body = BODIES[language](intent, ctx);
   return {
     answer: `${body} ${windowText(ctx, language)}`,
     citedRuleIds: [...RULES[intent]],

@@ -3,7 +3,8 @@ import { useState } from 'preact/hooks';
 
 import type { AiContext, AskResponse, Language } from '../../../shared/schema/ai.js';
 import { SelectField } from '../../components/Fields.js';
-import { useAsk } from './useAsk.js';
+import { useAsk, type Answer } from './useAsk.js';
+import { MAX_QUESTION_CHARS } from '../../../shared/limits.js';
 
 const SOURCE_TEXT: Record<AskResponse['source'], string> = {
   gemini: 'Answered by Gemini using only your plan’s figures.',
@@ -17,83 +18,77 @@ const STARTERS = [
   'Do I need a mask on my commute?',
 ];
 
-export function AskPanel({ context }: { context: AiContext }) {
-  const [question, setQuestion] = useState('');
-  const [language, setLanguage] = useState<Language>('en');
-  const { answer, busy, error, ask: send } = useAsk(context);
+const LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English' },
+  { value: 'hi', label: 'हिन्दी (Hindi)' },
+] as const;
 
-  const ask = async (text: string): Promise<void> => {
-    if (text.trim() !== '') {
-      setQuestion(text.trim());
-    }
-    await send(text, language);
-  };
+interface QuestionFieldProps {
+  question: string;
+  error: string | null;
+  onInput: (text: string) => void;
+}
 
-  const suggestions = answer && answer.followUps.length > 0 ? answer.followUps : STARTERS;
+function QuestionField({ question, error, onInput }: QuestionFieldProps) {
+  return (
+    <div class="field">
+      <label htmlFor="question">Your question</label>
+      {error ? (
+        <span class="error" id="question-error">
+          {error}
+        </span>
+      ) : null}
+      <textarea
+        id="question"
+        maxLength={MAX_QUESTION_CHARS}
+        value={question}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? 'question-error' : undefined}
+        onInput={(event) => {
+          onInput(event.currentTarget.value);
+        }}
+      />
+    </div>
+  );
+}
+
+/** The answer, tagged with the language it was asked in, its source and cited rules. */
+function AnswerBlock({ answer }: { answer: Answer }) {
+  const cited =
+    answer.citedRuleIds.length > 0 ? ` Based on rules ${answer.citedRuleIds.join(', ')}.` : '';
+  return (
+    <section class="answer" aria-labelledby="answer-title">
+      <h3 id="answer-title">Answer</h3>
+      <p lang={answer.language}>{answer.answer}</p>
+      <p class="hint">
+        {SOURCE_TEXT[answer.source]}
+        {cited}
+      </p>
+    </section>
+  );
+}
+
+function Suggestions({
+  items,
+  lang,
+  onPick,
+}: {
+  items: readonly string[];
+  lang: Language;
+  onPick: (q: string) => void;
+}) {
   return (
     <>
-      <h2>Ask Smogwise</h2>
-      <p>Ask about today: timing, children, masks, purifiers, heating or your commute.</p>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          void ask(question);
-        }}
-      >
-        <div class="field">
-          <label htmlFor="question">Your question</label>
-          {error ? (
-            <span class="error" id="question-error">
-              {error}
-            </span>
-          ) : null}
-          <textarea
-            id="question"
-            maxLength={400}
-            value={question}
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? 'question-error' : undefined}
-            onInput={(event) => {
-              setQuestion(event.currentTarget.value);
-            }}
-          />
-        </div>
-        <SelectField
-          id="language"
-          label="Answer in"
-          value={language}
-          options={[
-            { value: 'en', label: 'English' },
-            { value: 'hi', label: 'हिन्दी (Hindi)' },
-          ]}
-          onChange={setLanguage}
-        />
-        <button class="button" type="submit" disabled={busy}>
-          {busy ? 'Thinking…' : 'Ask'}
-        </button>
-      </form>
-      {answer ? (
-        <section class="answer" aria-labelledby="answer-title">
-          <h3 id="answer-title">Answer</h3>
-          <p lang={answer.language}>{answer.answer}</p>
-          <p class="hint">
-            {SOURCE_TEXT[answer.source]}
-            {answer.citedRuleIds.length > 0
-              ? ` Based on rules ${answer.citedRuleIds.join(', ')}.`
-              : ''}
-          </p>
-        </section>
-      ) : null}
       <h3>Try asking</h3>
       <ul class="chips">
-        {suggestions.map((s) => (
+        {items.map((s) => (
           <li key={s}>
             <button
               class="button button-quiet button-small"
               type="button"
-              lang={answer ? answer.language : 'en'}
+              lang={lang}
               onClick={() => {
-                void ask(s);
+                onPick(s);
               }}
             >
               {s}
@@ -101,6 +96,50 @@ export function AskPanel({ context }: { context: AiContext }) {
           </li>
         ))}
       </ul>
+    </>
+  );
+}
+
+export function AskPanel({ context }: { context: AiContext }) {
+  const [question, setQuestion] = useState('');
+  const [language, setLanguage] = useState<Language>('en');
+  const { answer, busy, error, ask: send } = useAsk(context);
+
+  const ask = (text: string): void => {
+    if (text.trim() !== '') {
+      setQuestion(text.trim());
+    }
+    void send(text, language);
+  };
+
+  return (
+    <>
+      <h2>Ask Smogwise</h2>
+      <p>Ask about today: timing, children, masks, purifiers, heating or your commute.</p>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          ask(question);
+        }}
+      >
+        <QuestionField question={question} error={error} onInput={setQuestion} />
+        <SelectField
+          id="language"
+          label="Answer in"
+          value={language}
+          options={LANGUAGE_OPTIONS}
+          onChange={setLanguage}
+        />
+        <button class="button" type="submit" disabled={busy}>
+          {busy ? 'Thinking…' : 'Ask'}
+        </button>
+      </form>
+      {answer ? <AnswerBlock answer={answer} /> : null}
+      <Suggestions
+        items={answer && answer.followUps.length > 0 ? answer.followUps : STARTERS}
+        lang={answer ? answer.language : 'en'}
+        onPick={ask}
+      />
       <p class="hint">
         Not medical advice. For chest pain, breathlessness at rest or blue lips, call your local
         emergency number.

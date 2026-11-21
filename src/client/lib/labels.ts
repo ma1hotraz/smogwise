@@ -47,6 +47,13 @@ export const SOURCE_LABELS: Record<IndoorSource, string> = {
   drySweeping: 'Dry sweeping with a broom',
 };
 
+/** How the household usually exercises. */
+export const EXERCISE_OPTIONS = [
+  { value: 'none', label: 'None most days' },
+  { value: 'outdoor', label: 'Outdoors (walk, run, cycle, yoga in the park)' },
+  { value: 'indoor', label: 'Indoors (home, gym)' },
+] as const;
+
 export const HOUR_OPTIONS = Array.from({ length: 24 }, (_, h) => ({
   value: String(h),
   label: formatHour(h),
@@ -56,7 +63,7 @@ export const scaleName = (scale: Scale): string => (scale === 'NAQI' ? 'India AQ
 
 export const tierName = (tier: Tier): string => TIER_NAMES[tier];
 
-/** "1,234" style integers for the user's locale. */
+/** Integers with Indian digit grouping ("1,23,456"), matching the app's primary audience. */
 export const formatInt = (value: number): string => Math.round(value).toLocaleString('en-IN');
 
 /** Signed figure for a saving: "3.3 kg less" / "22 kg more". */

@@ -1,10 +1,12 @@
 /**
- * Daily brief and Ask Smogwise (docs/04 §6). Order of guardrails: red-flag check → sanitise →
- * cache → model → zod → number check → rule-id filter; any failure falls back to rules.
+ * Daily brief and Ask Smogwise (docs/04 §6). Two implementations of one interface, chosen once at
+ * start-up: the rules service (no API key) and the Gemini service. The Gemini service runs every
+ * model call through one guarded pipeline: model → zod → number check → accept, else fall back.
  */
 import { createHash } from 'node:crypto';
 
-import { answerByIntent, composeBrief } from '../../shared/ai/fallback.js';
+import { composeBrief } from '../../shared/ai/fallback.js';
+import { rulesAnswer } from '../../shared/ai/rules.js';
 import {
   isRedFlag,
   safetyAnswer,
@@ -25,13 +27,26 @@ import { TtlCache } from '../cache.js';
 import type { Logger } from '../logger.js';
 import type { AiClient } from './client.js';
 import { askPrompt, briefPrompt, systemPrompt } from './prompts.js';
+import type * as z from 'zod/mini';
 
 const BRIEF_TOKENS = 300;
 const ANSWER_TOKENS = 500;
 const BRIEF_TTL_MS = 15 * 60_000;
 const ANSWER_TTL_MS = 10 * 60_000;
 
-export interface AiServiceDeps {
+export interface AiService {
+  brief(context: AiContext): Promise<BriefResponse>;
+  ask(request: AskRequest): Promise<AskResponse>;
+}
+
+/** Answers from the plan's rules only; used when no model is configured. */
+export const rulesService: AiService = {
+  brief: (context) => Promise.resolve(composeBrief(context)),
+  ask: (request) =>
+    Promise.resolve(rulesAnswer(request.question, request.context, request.language)),
+};
+
+interface GeminiServiceDeps {
   ai: AiClient;
   logger: Logger;
   timeoutMs: number;
@@ -39,101 +54,108 @@ export interface AiServiceDeps {
   now?: () => number;
 }
 
-export interface AiService {
-  brief(context: AiContext): Promise<BriefResponse>;
-  ask(request: AskRequest): Promise<AskResponse>;
+interface GuardedCall<T, R> {
+  route: 'brief' | 'ask';
+  system: string;
+  prompt: string;
+  jsonSchema: object;
+  maxOutputTokens: number;
+  output: z.ZodMiniType<T>;
+  /** Text whose numbers must all appear in the context. */
+  textOf: (value: T) => string;
+  context: AiContext;
+  accept: (value: T) => R;
+  fallback: () => R;
 }
 
 const hash = (value: unknown): string =>
   createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
-/** Logs why the model's output was not used — by reason only, never with content. */
-function rejected(deps: AiServiceDeps, route: string, reason: string): void {
-  deps.logger.log('warn', 'ai_fallback', { route, reason });
-}
-
-const reasonOf = (error: unknown): string => (error instanceof Error ? error.name : 'unknown');
-
-async function generateBrief(deps: AiServiceDeps, context: AiContext): Promise<BriefResponse> {
+/** One model call with every guardrail; logs only the reason when output is not used. */
+async function guarded<T, R>(deps: GeminiServiceDeps, call: GuardedCall<T, R>): Promise<R> {
+  const reject = (reason: string): R => {
+    deps.logger.log('warn', 'ai_fallback', { route: call.route, reason });
+    return call.fallback();
+  };
   try {
     const raw = await deps.ai.generateJson({
-      system: systemPrompt('en'),
-      prompt: briefPrompt(context),
-      schema: BRIEF_JSON_SCHEMA,
-      maxOutputTokens: BRIEF_TOKENS,
+      system: call.system,
+      prompt: call.prompt,
+      schema: call.jsonSchema,
+      maxOutputTokens: call.maxOutputTokens,
       signal: AbortSignal.timeout(deps.timeoutMs),
     });
-    const parsed = BriefOutput.safeParse(raw);
+    const parsed = call.output.safeParse(raw);
     if (!parsed.success) {
-      rejected(deps, 'brief', 'schema');
-      return composeBrief(context);
+      return reject('schema');
     }
-    if (unknownNumbers(`${parsed.data.headline} ${parsed.data.summary}`, context).length > 0) {
-      rejected(deps, 'brief', 'unknown_number');
-      return composeBrief(context);
+    if (unknownNumbers(call.textOf(parsed.data), call.context).length > 0) {
+      return reject('unknown_number');
     }
-    return { ...parsed.data, source: 'gemini' };
+    return call.accept(parsed.data);
   } catch (error) {
-    rejected(deps, 'brief', reasonOf(error));
-    return composeBrief(context);
+    return reject(error instanceof Error ? error.name : 'unknown');
   }
 }
 
-async function generateAnswer(
-  deps: AiServiceDeps,
-  request: AskRequest,
-  question: string,
-): Promise<AskResponse> {
-  const fallback = answerByIntent(question, request.context, request.language);
-  try {
-    const raw = await deps.ai.generateJson({
-      system: systemPrompt(request.language),
-      prompt: askPrompt(request.context, question),
-      schema: ANSWER_JSON_SCHEMA,
-      maxOutputTokens: ANSWER_TOKENS,
-      signal: AbortSignal.timeout(deps.timeoutMs),
-    });
-    const parsed = AnswerOutput.safeParse(raw);
-    if (!parsed.success) {
-      rejected(deps, 'ask', 'schema');
-      return fallback;
-    }
-    if (unknownNumbers(parsed.data.answer, request.context).length > 0) {
-      rejected(deps, 'ask', 'unknown_number');
-      return fallback;
-    }
-    const known = new Set([...request.context.actions, ...request.context.alerts].map((i) => i.id));
-    const citedRuleIds = parsed.data.citedRuleIds.filter((id) => known.has(id));
-    return { ...parsed.data, citedRuleIds, source: 'gemini' };
-  } catch (error) {
-    rejected(deps, 'ask', reasonOf(error));
-    return fallback;
-  }
+/** Rule ids the context mentions; the model may only cite these. */
+const knownIds = (context: AiContext): Set<string> =>
+  new Set([...context.actions, ...context.alerts].map((item) => item.id));
+
+/** The brief: Gemini writes the headline and summary from the plan summary. */
+function briefCall(context: AiContext): GuardedCall<BriefOutput, BriefResponse> {
+  return {
+    route: 'brief',
+    system: systemPrompt('en'),
+    prompt: briefPrompt(context),
+    jsonSchema: BRIEF_JSON_SCHEMA,
+    maxOutputTokens: BRIEF_TOKENS,
+    output: BriefOutput,
+    textOf: (value) => `${value.headline} ${value.summary}`,
+    context,
+    accept: (value) => ({ ...value, source: 'gemini' }),
+    fallback: () => composeBrief(context),
+  };
 }
 
-/** Creates the service with caches; with AI disabled it answers from rules directly. */
-export function createAiService(deps: AiServiceDeps): AiService {
+/** A question: Gemini answers from the plan; cited rule ids are filtered to known ones. */
+function answerCall(request: AskRequest, question: string): GuardedCall<AnswerOutput, AskResponse> {
+  const known = knownIds(request.context);
+  return {
+    route: 'ask',
+    system: systemPrompt(request.language),
+    prompt: askPrompt(request.context, question),
+    jsonSchema: ANSWER_JSON_SCHEMA,
+    maxOutputTokens: ANSWER_TOKENS,
+    output: AnswerOutput,
+    textOf: (value) => value.answer,
+    context: request.context,
+    accept: (value) => ({
+      ...value,
+      citedRuleIds: value.citedRuleIds.filter((id) => known.has(id)),
+      source: 'gemini',
+    }),
+    fallback: () => rulesAnswer(question, request.context, request.language),
+  };
+}
+
+/** Gemini-backed service with caches; model answers are cached, fallbacks are not (retried). */
+export function createGeminiService(deps: GeminiServiceDeps): AiService {
   const briefs = new TtlCache<BriefResponse>(deps.maxEntries, BRIEF_TTL_MS, deps.now);
   const answers = new TtlCache<AskResponse>(deps.maxEntries, ANSWER_TTL_MS, deps.now);
-  // Model answers are cached; a rules answer after a model failure is not, so it is retried.
   const cacheable = (value: { source: string }): boolean => value.source === 'gemini';
+
   return {
-    brief(context) {
-      if (!deps.ai.enabled) {
-        return Promise.resolve(composeBrief(context));
-      }
-      return briefs.load(hash(context), () => generateBrief(deps, context), cacheable);
-    },
+    brief: (context) =>
+      briefs.load(hash(context), () => guarded(deps, briefCall(context)), cacheable),
     ask(request) {
+      // Red flags never reach the model.
       if (isRedFlag(request.question)) {
         return Promise.resolve(safetyAnswer(request.language));
       }
       const question = sanitiseQuestion(request.question);
-      if (!deps.ai.enabled) {
-        return Promise.resolve(answerByIntent(question, request.context, request.language));
-      }
       const key = hash([request.language, question, request.context]);
-      return answers.load(key, () => generateAnswer(deps, request, question), cacheable);
+      return answers.load(key, () => guarded(deps, answerCall(request, question)), cacheable);
     },
   };
 }

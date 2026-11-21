@@ -7,6 +7,8 @@ import * as z from 'zod/mini';
 
 import { MAX_HOURS, type AirData, type HourlyPoint, type Place } from '../../shared/schema/air.js';
 import { Location } from '../../shared/schema/profile.js';
+import { MAX_PM25 } from '../../shared/limits.js';
+import { round } from '../../shared/time.js';
 
 export type FetchFn = (input: URL, init: RequestInit) => Promise<Response>;
 
@@ -14,7 +16,6 @@ const GEOCODE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 const AIR_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 const MAX_BYTES = 512 * 1024;
 const MAX_RESULTS = 5;
-const MAX_CONCENTRATION = 2000;
 
 /** Any upstream failure; routes map it to a generic 502. */
 export class UpstreamError extends Error {
@@ -24,6 +25,7 @@ export class UpstreamError extends Error {
   }
 }
 
+/** Third-party responses: validated for the fields we use, unknown extra fields tolerated. */
 const GeocodeBody = z.object({
   results: z.optional(
     z.array(
@@ -78,15 +80,14 @@ function toPlace(raw: NonNullable<z.infer<typeof GeocodeBody>['results']>[number
     name: raw.name,
     admin1: raw.admin1,
     countryCode: raw.country_code,
-    lat: Math.round(raw.latitude * 100) / 100,
-    lon: Math.round(raw.longitude * 100) / 100,
+    lat: round(raw.latitude, 2),
+    lon: round(raw.longitude, 2),
     timezone: raw.timezone,
   });
   return parsed.success ? parsed.data : null;
 }
 
-const clampPm = (value: number): number =>
-  Math.round(Math.min(MAX_CONCENTRATION, Math.max(0, value)) * 10) / 10;
+const clampPm = (value: number): number => round(Math.min(MAX_PM25, Math.max(0, value)), 1);
 
 function toHourly(body: z.infer<typeof AirBody>): HourlyPoint[] {
   const { time, pm2_5, pm10 } = body.hourly;

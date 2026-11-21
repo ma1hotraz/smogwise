@@ -1,7 +1,9 @@
+/** HTTP hardening: CSP and security headers, compression, rate limits, JSON-only bodies. */
 import compression from 'compression';
 import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import { sendError } from '../httpErrors.js';
 
 /** Content Security Policy: same-origin only, no inline script or style (docs/05 §2). */
 export const CSP_DIRECTIVES = {
@@ -35,7 +37,7 @@ const limiter = (windowMs: number, limit: number): RequestHandler =>
     standardHeaders: true,
     legacyHeaders: false,
     handler: (_req, res) => {
-      res.status(429).json({ error: 'rate_limited' });
+      sendError(res, 'rate_limited');
     },
   });
 
@@ -80,7 +82,7 @@ export const noStore: RequestHandler = (_req, res, next) => {
 /** Rejects request bodies that are not JSON (415). */
 export const requireJson: RequestHandler = (req, res, next) => {
   if (req.method === 'POST' && !req.is('application/json')) {
-    res.status(415).json({ error: 'unsupported_media_type' });
+    sendError(res, 'unsupported_media_type');
     return;
   }
   next();

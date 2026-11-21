@@ -4,13 +4,12 @@ import { useState } from 'preact/hooks';
 import type { AiContext, AskResponse, Language } from '../../../shared/schema/ai.js';
 import { useAnnounce } from '../../lib/announcer.js';
 import { askSmogwise } from '../../lib/api.js';
-
-const MAX_QUESTION = 400;
+import { MAX_QUESTION_CHARS } from '../../../shared/limits.js';
 
 /** An answer keeps its own language, so `lang` stays right if the picker changes afterwards. */
 export type Answer = AskResponse & { language: Language };
 
-export interface AskState {
+interface AskState {
   answer: Answer | null;
   busy: boolean;
   error: string | null;
@@ -31,10 +30,13 @@ export function useAsk(context: AiContext): AskState {
     }
     setError(null);
     setBusy(true);
-    const reply = await askSmogwise(trimmed.slice(0, MAX_QUESTION), context, language);
-    setAnswer({ ...reply, language });
-    setBusy(false);
-    announce('Answer ready.');
+    try {
+      const reply = await askSmogwise(trimmed.slice(0, MAX_QUESTION_CHARS), context, language);
+      setAnswer({ ...reply, language });
+      announce('Answer ready.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return { answer, busy, error, ask };

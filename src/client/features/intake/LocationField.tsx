@@ -1,72 +1,66 @@
 /**
- * City search (ARIA 1.2 combobox with a listbox popup) plus "Use my location", which rounds the
- * position to 0.1° in the browser before it is used anywhere (docs/02 AD5).
+ * City search (ARIA 1.2 combobox with a listbox popup) plus "Use my location" (docs/02 AD5,
+ * docs/06 §2). Search and geolocation live in hooks; this file renders and handles keys.
  */
-import { useEffect, useState } from 'preact/hooks';
+import type { RefObject } from 'preact';
+import { useState } from 'preact/hooks';
 
-import { roundCoord, type Place } from '../../../shared/schema/air.js';
+import type { Place } from '../../../shared/schema/air.js';
 import type { Location } from '../../../shared/schema/profile.js';
-import { searchPlaces } from '../../lib/api.js';
-import { countryFromTimezone, placeLabel } from '../../lib/geo.js';
+import { placeLabel } from '../../lib/geo.js';
+import { useMyLocation } from './useMyLocation.js';
+import { usePlaceSearch } from './usePlaceSearch.js';
 
 interface LocationFieldProps {
   value: Location | null;
   error: string | null;
+  inputRef?: RefObject<HTMLInputElement>;
   onChange: (location: Location) => void;
 }
 
-const DEBOUNCE_MS = 300;
-
-function useSearch(query: string, selectedLabel: string) {
-  const [results, setResults] = useState<Place[]>([]);
-  const [status, setStatus] = useState('');
-  useEffect(() => {
-    const q = query.trim();
-    if (q.length < 2 || q === selectedLabel) {
-      setResults([]);
-      return undefined;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      setStatus('Searching…');
-      searchPlaces(q, controller.signal)
-        .then((places) => {
-          setResults(places);
-          setStatus(
-            places.length === 0
-              ? 'No places found. Try a nearby city.'
-              : `${places.length} places found.`,
-          );
-        })
-        .catch(() => {
-          if (!controller.signal.aborted) {
-            setStatus('Place search is unavailable. Try “Use my location”.');
-          }
-        });
-    }, DEBOUNCE_MS);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [query, selectedLabel]);
-  return {
-    results,
-    status,
-    clear: () => {
-      setResults([]);
-    },
-  };
+/** Next active option for an arrow key, wrapping around; unchanged for other keys. */
+export function nextActive(key: string, current: number, count: number): number {
+  const step = key === 'ArrowDown' ? 1 : key === 'ArrowUp' ? -1 : 0;
+  return step === 0 ? current : (current + step + count) % Math.max(count, 1);
 }
 
-export function LocationField({ value, error, onChange }: LocationFieldProps) {
+interface ListboxProps {
+  results: readonly Place[];
+  active: number;
+  onChoose: (place: Place) => void;
+}
+
+function PlaceListbox({ results, active, onChoose }: ListboxProps) {
+  return (
+    <div id="place-list" role="listbox" aria-label="Matching places" hidden={results.length === 0}>
+      {results.map((place, index) => (
+        <div
+          key={`${place.name}-${place.lat}-${place.lon}`}
+          id={`place-${index}`}
+          role="option"
+          tabIndex={-1}
+          aria-selected={index === active}
+          onMouseDown={(event) => {
+            event.preventDefault();
+            onChoose(place);
+          }}
+        >
+          {placeLabel(place)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Combobox state: the typed query, the active option, the search results and key handling. */
+function usePlaceCombobox(value: Location | null, onChange: (location: Location) => void) {
   const selectedLabel = value ? placeLabel(value) : '';
   const [query, setQuery] = useState(selectedLabel);
   const [active, setActive] = useState(-1);
-  const [geoStatus, setGeoStatus] = useState('');
-  const { results, status, clear } = useSearch(query, selectedLabel);
+  const { results, status, clear } = usePlaceSearch(query, selectedLabel);
   const open = results.length > 0;
 
-  const choose = (place: Place): void => {
+  const choose = (place: Location): void => {
     onChange(place);
     setQuery(placeLabel(place));
     setActive(-1);
@@ -74,44 +68,32 @@ export function LocationField({ value, error, onChange }: LocationFieldProps) {
   };
 
   const onKeyDown = (event: KeyboardEvent): void => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    const chosen = event.key === 'Enter' && open ? results[active] : undefined;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || chosen) {
       event.preventDefault();
-      const step = event.key === 'ArrowDown' ? 1 : -1;
-      setActive((current) => (current + step + results.length) % Math.max(results.length, 1));
-    } else if (event.key === 'Enter' && open && results[active]) {
-      event.preventDefault();
-      choose(results[active]);
+    }
+    if (chosen) {
+      choose(chosen);
     } else if (event.key === 'Escape') {
       clear();
+    } else {
+      setActive((current) => nextActive(event.key, current, results.length));
     }
   };
 
-  const useMyLocation = (): void => {
-    if (!('geolocation' in navigator)) {
-      setGeoStatus('Location is not available in this browser. Search for your city instead.');
-      return;
-    }
-    setGeoStatus('Finding your area…');
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const place: Location = {
-          name: 'Your area',
-          countryCode: countryFromTimezone(timezone),
-          lat: roundCoord(position.coords.latitude),
-          lon: roundCoord(position.coords.longitude),
-          timezone,
-        };
-        choose(place);
-        setGeoStatus('Using your area, rounded to about 11 km.');
-      },
-      () => {
-        setGeoStatus('Location permission was not given. Search for your city instead.');
-      },
-      { maximumAge: 600_000, timeout: 10_000 },
-    );
+  const type = (text: string): void => {
+    setQuery(text);
+    setActive(-1);
   };
+  return { query, type, active, results, status, open, choose, onKeyDown };
+}
 
+export function LocationField({ value, error, inputRef, onChange }: LocationFieldProps) {
+  const { query, type, active, results, status, open, choose, onKeyDown } = usePlaceCombobox(
+    value,
+    onChange,
+  );
+  const geo = useMyLocation();
   const describedBy = ['place-hint', error ? 'place-error' : '', 'place-status']
     .filter(Boolean)
     .join(' ');
@@ -128,6 +110,7 @@ export function LocationField({ value, error, onChange }: LocationFieldProps) {
       ) : null}
       <div class="combo">
         <input
+          ref={inputRef ?? null}
           id="place"
           type="text"
           role="combobox"
@@ -140,34 +123,23 @@ export function LocationField({ value, error, onChange }: LocationFieldProps) {
           aria-describedby={describedBy}
           value={query}
           onInput={(event) => {
-            setQuery(event.currentTarget.value);
-            setActive(-1);
+            type(event.currentTarget.value);
           }}
           onKeyDown={onKeyDown}
         />
-        <div id="place-list" role="listbox" aria-label="Matching places" hidden={!open}>
-          {results.map((place, index) => (
-            <div
-              key={`${place.name}-${place.lat}-${place.lon}`}
-              id={`place-${index}`}
-              role="option"
-              tabIndex={-1}
-              aria-selected={index === active}
-              onMouseDown={(event) => {
-                event.preventDefault();
-                choose(place);
-              }}
-            >
-              {placeLabel(place)}
-            </div>
-          ))}
-        </div>
+        <PlaceListbox results={results} active={active} onChoose={choose} />
       </div>
       <span class="hint" id="place-status" role="status">
-        {geoStatus || status}
+        {geo.status || status}
       </span>
       <div>
-        <button class="button button-quiet button-small" type="button" onClick={useMyLocation}>
+        <button
+          class="button button-quiet button-small"
+          type="button"
+          onClick={() => {
+            geo.locate(choose);
+          }}
+        >
           Use my location
         </button>
       </div>

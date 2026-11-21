@@ -4,8 +4,8 @@
  */
 import type * as z from 'zod/mini';
 
-import { answerByIntent, composeBrief } from '../../shared/ai/fallback.js';
-import { isRedFlag, safetyAnswer, sanitiseQuestion } from '../../shared/ai/safety.js';
+import { composeBrief } from '../../shared/ai/fallback.js';
+import { rulesAnswer } from '../../shared/ai/rules.js';
 import {
   AskReply,
   BriefReply,
@@ -34,17 +34,20 @@ async function request<T>(
   return parsed.data;
 }
 
+/** Request options carrying an abort signal when one is given. */
+const withSignal = (signal?: AbortSignal): RequestInit => (signal ? { signal } : {});
+
 const postJson = (body: unknown, signal?: AbortSignal): RequestInit => ({
   method: 'POST',
   headers: { 'content-type': 'application/json' },
   body: JSON.stringify(body),
-  ...(signal ? { signal } : {}),
+  ...withSignal(signal),
 });
 
 /** Live air data for the 0.1° cell around a point (coordinates are rounded here, too). */
 export function fetchAir(lat: number, lon: number, signal?: AbortSignal): Promise<AirData> {
   const query = new URLSearchParams({ lat: String(roundCoord(lat)), lon: String(roundCoord(lon)) });
-  return request(`/api/air?${query.toString()}`, AirData, signal ? { signal } : {});
+  return request(`/api/air?${query.toString()}`, AirData, withSignal(signal));
 }
 
 /** Places matching a name. */
@@ -53,7 +56,7 @@ export async function searchPlaces(q: string, signal?: AbortSignal): Promise<Pla
   const body = await request(
     `/api/geocode?${query.toString()}`,
     GeocodeResponse,
-    signal ? { signal } : {},
+    withSignal(signal),
   );
   return body.results;
 }
@@ -79,8 +82,6 @@ export async function askSmogwise(
   try {
     return await request('/api/ask', AskReply, postJson({ question, context, language }));
   } catch {
-    return isRedFlag(question)
-      ? safetyAnswer(language)
-      : answerByIntent(sanitiseQuestion(question), context, language);
+    return rulesAnswer(question, context, language);
   }
 }

@@ -1,3 +1,4 @@
+/** Browser entry: applies display preferences, renders the app and prefetches the plan chunk. */
 import { render } from 'preact';
 
 import './styles/tokens.css';

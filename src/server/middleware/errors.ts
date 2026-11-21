@@ -1,10 +1,12 @@
+/** Not-found and central error handlers: generic JSON bodies, details only in logs. */
 import type { ErrorRequestHandler, RequestHandler } from 'express';
 
 import type { Logger } from '../logger.js';
 import { requestIdOf } from '../requestId.js';
+import { sendError } from '../httpErrors.js';
 
 export const notFound: RequestHandler = (_req, res) => {
-  res.status(404).json({ error: 'not_found' });
+  sendError(res, 'not_found');
 };
 
 /** Classifies body-parser failures; anything else is an internal error. */
@@ -27,11 +29,11 @@ export const errorHandler =
   (error: unknown, _req, res, _next) => {
     const clientError = clientErrorOf(error);
     if (clientError === 413) {
-      res.status(413).json({ error: 'payload_too_large' });
+      sendError(res, 'payload_too_large');
       return;
     }
     if (clientError === 400) {
-      res.status(400).json({ error: 'invalid_request' });
+      sendError(res, 'invalid_request');
       return;
     }
     const requestId = requestIdOf(res);
@@ -39,5 +41,5 @@ export const errorHandler =
       requestId,
       reason: error instanceof Error ? error.name : 'unknown',
     });
-    res.status(500).json({ error: 'internal_error', requestId });
+    sendError(res, 'internal_error', { requestId });
   };

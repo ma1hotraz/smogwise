@@ -1,3 +1,4 @@
+/** Language-model client port (AiClient) and its Gemini and disabled implementations. */
 import { ApiError, GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 export class AiDisabledError extends Error {
@@ -7,7 +8,7 @@ export class AiDisabledError extends Error {
   }
 }
 
-export interface AiUsage {
+interface AiUsage {
   promptTokens?: number | undefined;
   outputTokens?: number | undefined;
 }
@@ -60,7 +61,7 @@ const wait = (ms: number, signal?: AbortSignal): Promise<void> =>
     );
   });
 
-export interface GeminiOptions {
+interface GeminiOptions {
   apiKey: string;
   model: string;
   maxRetries?: number | undefined;

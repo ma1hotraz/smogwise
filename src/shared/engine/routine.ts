@@ -1,6 +1,6 @@
 /** R01–R09 — the time-slotted low-emission day (docs/03). */
 import type { Household, Lifestyle } from '../schema/profile.js';
-import { formatHour, round } from '../time.js';
+import { formatHour, formatWindow, round } from '../time.js';
 import { ROUTINE_COPY, fill } from './data/copy.js';
 import { burnsFuelIndoors, MODES, N95_FACTOR } from './data/factors.js';
 import { commutes } from './choices.js';
@@ -57,7 +57,7 @@ function windowSteps(ctx: RoutineContext): RoutineStep[] {
   } else if (ctx.tierGeneral === 5) {
     steps.push(step(8, 'R02', 'shutAllDay'));
   } else if (clean) {
-    const span = `${formatHour(clean.startHour)}–${formatHour(clean.startHour + clean.hours)}`;
+    const span = formatWindow(clean.startHour, clean.hours);
     steps.push(
       step(clean.startHour, 'R02', 'airBurst', { minutes: ctx.tierGeneral === 4 ? 5 : 10, span }),
     );

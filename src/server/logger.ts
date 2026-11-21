@@ -1,3 +1,4 @@
+/** JSON-lines logger with credential redaction; never given request or model content. */
 export type LogLevel = 'info' | 'warn' | 'error';
 export type LogFields = Record<string, string | number | boolean | undefined>;
 

@@ -5,7 +5,7 @@
  */
 import type { Scale } from '../types.js';
 
-export interface Breakpoint {
+interface Breakpoint {
   cLow: number;
   cHigh: number;
   iLow: number;
@@ -14,14 +14,7 @@ export interface Breakpoint {
 }
 
 /** Exactly six rows, one per level, so `rows[level]` is always defined. */
-export type SixRows = readonly [
-  Breakpoint,
-  Breakpoint,
-  Breakpoint,
-  Breakpoint,
-  Breakpoint,
-  Breakpoint,
-];
+type SixRows = readonly [Breakpoint, Breakpoint, Breakpoint, Breakpoint, Breakpoint, Breakpoint];
 
 export const BREAKPOINTS: Record<Scale, SixRows> = {
   US_AQI: [

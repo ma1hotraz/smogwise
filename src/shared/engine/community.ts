@@ -6,7 +6,7 @@ import { CAR_MODES, TREE_KG_CO2_YEAR, WEEKS_PER_MONTH } from './data/factors.js'
 import { reportingChannel } from './location.js';
 import type { CommunityAction, Swap, Tier } from './types.js';
 
-export interface CommunityContext {
+interface CommunityContext {
   lifestyle: Lifestyle;
   household: Household;
   tierGeneral: Tier;
@@ -38,7 +38,7 @@ export function communityActions(ctx: CommunityContext): CommunityAction[] {
     }));
 }
 
-export interface CommunityImpact {
+interface CommunityImpact {
   co2KgMonth: number;
   pm25GMonth: number;
   /** Trees needed to take up that much CO₂ in a year (C02, approximate). */

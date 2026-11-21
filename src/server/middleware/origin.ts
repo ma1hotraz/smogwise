@@ -1,4 +1,6 @@
+/** Same-origin guard for state-changing API requests. */
 import type { RequestHandler } from 'express';
+import { sendError } from '../httpErrors.js';
 
 /** The host a browser used to reach us, honouring the single trusted proxy (Vercel). */
 const hostOf = (value: string | string[] | undefined): string =>
@@ -29,7 +31,7 @@ export const sameOriginOnly: RequestHandler = (req, res, next) => {
   // A present but unusable Origin (including "null" from sandboxed frames) is refused too.
   const crossSite = site === 'cross-site' || (origin !== undefined && originHost(origin) !== host);
   if (crossSite) {
-    res.status(403).json({ error: 'forbidden_origin' });
+    sendError(res, 'forbidden_origin');
     return;
   }
   next();

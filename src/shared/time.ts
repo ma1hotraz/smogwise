@@ -30,6 +30,11 @@ export function formatHour(hour: number): string {
   return `${String(h).padStart(2, '0')}:00`;
 }
 
+/** A time range such as "14:00–16:00" (the separator can be changed for prose). */
+export function formatWindow(startHour: number, hours: number, separator = '–'): string {
+  return `${formatHour(startHour)}${separator}${formatHour(startHour + hours)}`;
+}
+
 /** Arithmetic mean; 0 for an empty list. */
 export function mean(values: readonly number[]): number {
   return values.length === 0 ? 0 : values.reduce((sum, v) => sum + v, 0) / values.length;

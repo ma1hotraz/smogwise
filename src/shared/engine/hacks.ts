@@ -2,7 +2,8 @@
 import { INDOOR_SOURCES, type IndoorSource, type Lifestyle } from '../schema/profile.js';
 import { INDOOR } from './data/factors.js';
 import { homeState, indoorPm, purifierVerdict } from './indoor.js';
-import type { Choices, Cost, Hack, HackChoice, RuleId } from './types.js';
+import { choicesFor } from './whatIf.js';
+import type { Cost, Hack, HackChoice, RuleId } from './types.js';
 
 const SOURCE_HACKS: Record<
   IndoorSource,
@@ -42,20 +43,6 @@ const SOURCE_HACKS: Record<
 
 /** A hack before its effect is measured; every measurable hack maps to a what-if choice. */
 type Candidate = Omit<Hack, 'reductionPct' | 'choice'> & { choice: HackChoice };
-
-/** Translates a hack into the what-if choices that model it. */
-export function choicesFor(choice: HackChoice): Choices {
-  switch (choice.kind) {
-    case 'purifier':
-      return { purifierCadr: choice.cadr };
-    case 'sealGaps':
-      return { sealGaps: true };
-    case 'removeSource':
-      return { removeSources: [choice.source] };
-    case 'kitchenExhaust':
-      return { kitchenExhaust: true };
-  }
-}
 
 function purifierHacks(lifestyle: Lifestyle): Candidate[] {
   const verdict = purifierVerdict(lifestyle.home.roomM2, lifestyle.home.purifierCadr);

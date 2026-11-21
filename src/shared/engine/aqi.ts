@@ -1,6 +1,7 @@
 /** A01 — index scale and band; A06 — cigarette equivalence (docs/03). */
 import { BREAKPOINTS, CIGARETTE_UG_M3 } from './data/scales.js';
 import type { Band, Level, Scale } from './types.js';
+import { round } from '../time.js';
 
 const MAX_INDEX = 500;
 const TOP_LEVEL: Level = 5;
@@ -41,5 +42,5 @@ export function bandFor(pm25: number, scale: Scale): Band {
 
 /** A06: cigarettes per day equivalent to breathing a concentration for 24 hours. */
 export function cigarettesFor(concentration: number): number {
-  return Math.round((concentration / CIGARETTE_UG_M3) * 10) / 10;
+  return round(concentration / CIGARETTE_UG_M3, 1);
 }

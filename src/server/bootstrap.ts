@@ -1,3 +1,4 @@
+/** Composition root: builds real dependencies from the environment for the Node server and Vercel. */
 import type { Express } from 'express';
 
 import { DisabledAiClient, GeminiClient, type AiClient } from './ai/client.js';
@@ -7,7 +8,7 @@ import { loadConfig, type Config } from './config.js';
 import { createLogger, type Logger } from './logger.js';
 import { createOpenMeteo } from './upstream/openMeteo.js';
 
-export interface Bootstrapped {
+interface Bootstrapped {
   app: Express;
   config: Config;
   logger: Logger;

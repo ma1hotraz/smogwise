@@ -8,6 +8,7 @@ import {
   SOURCE_DELTA,
 } from './data/factors.js';
 import type { Choices, PurifierVerdict } from './types.js';
+import { round } from '../time.js';
 
 /** Physical state of the main room that the model needs. */
 export interface HomeState {
@@ -66,7 +67,7 @@ export function indoorPm(outdoor: number, state: HomeState): number {
 /** Purifier verdict against 5 air changes per hour (≈ AHAM "2/3 rule"). */
 export function purifierVerdict(roomM2: number, cadr: number): PurifierVerdict {
   const requiredCadr = Math.round(roomM2 * INDOOR.ceilingM * INDOOR.targetAch);
-  const coverage = Math.round((cadr / requiredCadr) * 100) / 100;
+  const coverage = round(cadr / requiredCadr, 2);
   if (cadr === 0) {
     return { status: 'none', requiredCadr, coverage: 0 };
   }

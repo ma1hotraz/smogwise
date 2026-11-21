@@ -1,6 +1,7 @@
 /**
  * User-facing wording for rules, kept apart from the logic so rules stay short and the copy can
- * be reviewed (and translated) in one place. Keys are rule ids from docs/03.
+ * be reviewed in one place: alert, routine and community wording. Hack and swap wording sits with
+ * its rule tables in hacks.ts and swaps.ts. Keys are rule ids from docs/03.
  */
 
 export interface Copy {

@@ -1,3 +1,4 @@
+/** Per-request id stored on the response, for log correlation and error bodies. */
 import type { Response } from 'express';
 
 /** Attaches the per-request id used in logs and error bodies. */

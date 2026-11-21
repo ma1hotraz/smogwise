@@ -4,7 +4,7 @@
  */
 import type { CommuteMode, CookingFuel, Heating, IndoorSource } from '../../schema/profile.js';
 
-export interface ModeFactor {
+interface ModeFactor {
   label: string;
   speedKmh: number;
   /** Breathing rate while travelling, m³/h. */

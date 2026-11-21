@@ -3,6 +3,7 @@
  * a model, questions are sanitised, and model text is checked for invented numbers.
  */
 import type { AiContext, AskResponse, Language } from '../schema/ai.js';
+import { MAX_QUESTION_CHARS } from '../limits.js';
 
 const RED_FLAGS = [
   'chest pain',
@@ -51,8 +52,6 @@ export function safetyAnswer(language: Language): AskResponse {
   return { answer: SAFETY_TEXT[language], citedRuleIds: [], followUps: [], source: 'safety' };
 }
 
-const MAX_QUESTION = 400;
-
 /** Control (Cc) and format characters such as zero-width and bidi overrides (Cf), line separators. */
 const INVISIBLE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu;
 
@@ -64,7 +63,7 @@ export function sanitiseQuestion(question: string): string {
     .replace(/<{3,}|>{3,}/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, MAX_QUESTION);
+    .slice(0, MAX_QUESTION_CHARS);
 }
 
 /** Numbers any answer may use without them appearing in the context (N95, PM2.5, emergency lines…). */

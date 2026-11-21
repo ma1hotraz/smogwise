@@ -1,3 +1,4 @@
+/** In-memory TTL + LRU cache with in-flight de-duplication, shared by upstream data and AI routes. */
 interface Entry<V> {
   value: V;
   expiresAt: number;
