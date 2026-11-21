@@ -23,6 +23,7 @@ export interface AiClient {
 
 const DEFAULT_MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 600;
+const RETRY_JITTER_MS = 200;
 const RETRYABLE = (status: number): boolean => status === 429 || status >= 500;
 
 /** True when the model refused the request because of the thinking setting. */
@@ -56,6 +57,10 @@ interface GeminiOptions {
   onUsage?: ((usage: AiUsage) => void) | undefined;
 }
 
+/**
+ * Gemini implementation of AiClient: structured JSON output, minimal thinking, one retry with
+ * jitter on 429/5xx, and a fallback without the thinking setting if the model rejects it.
+ */
 export class GeminiClient implements AiClient {
   private readonly ai: GoogleGenAI;
   private readonly maxRetries: number;
@@ -92,7 +97,7 @@ export class GeminiClient implements AiClient {
         ) {
           throw error;
         }
-        await wait(RETRY_DELAY_MS + Math.random() * 200, args.signal);
+        await wait(RETRY_DELAY_MS + Math.random() * RETRY_JITTER_MS, args.signal);
       }
     }
   }

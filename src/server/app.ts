@@ -15,6 +15,7 @@ import {
   applySecurity,
   dataRateLimit,
   noStore,
+  ONE_YEAR_SECONDS,
   requireJson,
 } from './middleware/security.js';
 import { setRequestId } from './requestId.js';
@@ -35,7 +36,6 @@ interface AppDeps {
 }
 
 const BODY_LIMIT = '16kb';
-const YEAR_MS = 31_536_000_000;
 
 function requestLogging(logger: Logger) {
   return (req: Request, res: Response, next: NextFunction): void => {
@@ -60,7 +60,7 @@ function serveClient(app: Express, staticDir: string): void {
     express.static(path.join(staticDir, 'assets'), {
       dotfiles: 'deny',
       immutable: true,
-      maxAge: YEAR_MS,
+      maxAge: ONE_YEAR_SECONDS * 1000,
     }),
   );
   app.use(express.static(staticDir, { index: false, dotfiles: 'deny' }));

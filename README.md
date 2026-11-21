@@ -125,13 +125,13 @@ tests/        unit, property, api, components, e2e
 
 ### Efficiency
 
-| Metric                      | Budget  | Measured                 |
-| --------------------------- | ------- | ------------------------ |
-| Initial JS (gzip)           | ≤ 35 kB | **25.4 kB**              |
-| Total JS, all chunks (gzip) | ≤ 60 kB | **43.0 kB**              |
-| CSS (gzip)                  | ≤ 8 kB  | **2.8 kB**               |
-| Web fonts                   | 0       | **0** (system fonts)     |
-| `buildPlan`                 | < 2 ms  | asserted over 1,000 runs |
+| Metric                      | Budget  | Measured             |
+| --------------------------- | ------- | -------------------- |
+| Initial JS (gzip)           | ≤ 35 kB | **26.5 kB**          |
+| Total JS, all chunks (gzip) | ≤ 60 kB | **44.1 kB**          |
+| CSS (gzip)                  | ≤ 8 kB  | **2.8 kB**           |
+| Web fonts                   | 0       | **0** (system fonts) |
+| `buildPlan`                 | < 2 ms  | median of 1,000 runs |
 
 Preact instead of React; the plan view (engine) is its own chunk, prefetched while the intake is
 shown; Ask and Community load on demand. Server: shared TTL/LRU caches with in-flight
@@ -146,9 +146,9 @@ npm test          # Vitest with coverage gates (fails below them)
 npm run test:e2e  # Playwright on the production build, no API key, upstream routed to fixtures
 ```
 
-**358** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
-Coverage: **100 % statements · 100 % functions · 100 % lines · 96.9 % branches**; the
-decision engine is at 100 % on every measure. Property tests (fast-check, 500 runs each) prove: the index is monotonic; a
+**359** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
+Coverage: **100 % statements · 100 % functions · 100 % lines · 97.0 % branches**; the decision
+engine is at 100 % on every measure, branches included. Property tests (fast-check, 500 runs each) prove: the index is monotonic; a
 purifier, an N95 or removing an indoor source never increases dose; the clean window is never
 beaten; `buildPlan` never throws. The property suite found a real modelling edge case — sealing a
 home raises indoor PM2.5 when outdoor air is cleaner — so hacks are now shown only when they help.

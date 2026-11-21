@@ -3,6 +3,7 @@ import compression from 'compression';
 import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+
 import { sendError } from '../httpErrors.js';
 
 /** Content Security Policy: same-origin only, no inline script or style (docs/05 §2). */
@@ -24,6 +25,8 @@ export const CSP_DIRECTIVES = {
 export const PERMISSIONS_POLICY =
   'camera=(), microphone=(), geolocation=(self), payment=(), usb=()';
 
+/** One year in seconds: HSTS max-age and the immutable asset cache. */
+export const ONE_YEAR_SECONDS = 31_536_000;
 const ONE_MINUTE = 60_000;
 const ONE_DAY = 86_400_000;
 const GLOBAL_PER_MIN = 120;
@@ -50,7 +53,7 @@ export function applySecurity(app: Express): void {
       contentSecurityPolicy: { useDefaults: false, directives: CSP_DIRECTIVES },
       crossOriginEmbedderPolicy: false,
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-      strictTransportSecurity: { maxAge: 31_536_000, includeSubDomains: true },
+      strictTransportSecurity: { maxAge: ONE_YEAR_SECONDS, includeSubDomains: true },
     }),
   );
   app.use((_req: Request, res: Response, next: NextFunction) => {

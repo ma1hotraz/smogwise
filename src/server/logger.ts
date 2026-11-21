@@ -29,10 +29,11 @@ export function redact(fields: LogFields): LogFields {
  */
 export function createLogger(
   write: (line: string) => void = (line) => process.stdout.write(`${line}\n`),
+  now: () => Date = () => new Date(),
 ): Logger {
   return {
     log(level, msg, fields = {}) {
-      write(JSON.stringify({ level, time: new Date().toISOString(), msg, ...redact(fields) }));
+      write(JSON.stringify({ level, time: now().toISOString(), msg, ...redact(fields) }));
     },
   };
 }

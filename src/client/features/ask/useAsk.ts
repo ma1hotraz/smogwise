@@ -1,10 +1,10 @@
 /** Ask Smogwise state: validation, the request, and the answer with the language it was asked in. */
 import { useState } from 'preact/hooks';
 
+import { MAX_QUESTION_CHARS } from '../../../shared/limits.js';
 import type { AiContext, AskResponse, Language } from '../../../shared/schema/ai.js';
 import { useAnnounce } from '../../lib/announcer.js';
 import { askSmogwise } from '../../lib/api.js';
-import { MAX_QUESTION_CHARS } from '../../../shared/limits.js';
 
 /** An answer keeps its own language, so `lang` stays right if the picker changes afterwards. */
 export type Answer = AskResponse & { language: Language };

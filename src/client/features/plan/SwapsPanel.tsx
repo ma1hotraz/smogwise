@@ -1,9 +1,9 @@
 /** Swaps & impact: sustainable alternatives with their direct impact, toggled live (F4). */
 import type { Choices, Plan } from '../../../shared/engine/types.js';
+import { swapIsOn, toggleSwap } from '../../../shared/engine/whatIf.js';
 import { CheckField } from '../../components/Fields.js';
 import { DoseMeter } from '../../components/PlanBits.js';
 import { savingText } from '../../lib/labels.js';
-import { swapIsOn, toggleSwap } from '../../../shared/engine/whatIf.js';
 
 interface PanelProps {
   plan: Plan;

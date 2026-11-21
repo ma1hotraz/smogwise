@@ -1,5 +1,6 @@
 /** Same-origin guard for state-changing API requests. */
 import type { RequestHandler } from 'express';
+
 import { sendError } from '../httpErrors.js';
 
 /** The host a browser used to reach us, honouring the single trusted proxy (Vercel). */

@@ -7,16 +7,20 @@ import type * as z from 'zod/mini';
 import { composeBrief } from '../../shared/ai/fallback.js';
 import { rulesAnswer } from '../../shared/ai/rules.js';
 import {
-  AskReply,
-  BriefReply,
   type AiContext,
+  AskReply,
   type AskResponse,
+  BriefReply,
   type BriefResponse,
   type Language,
 } from '../../shared/schema/ai.js';
 import { AirData, GeocodeResponse, roundCoord } from '../../shared/schema/air.js';
 import type { Location } from '../../shared/schema/profile.js';
 
+/**
+ * The client's only door to the network (an adapter over the browser's fetch): validates every
+ * response and throws on failure; callers decide the fallback.
+ */
 async function request<T>(
   url: string,
   schema: z.ZodMiniType<T>,
@@ -70,6 +74,8 @@ export async function requestBrief(
   try {
     return await request('/api/brief', BriefReply, postJson({ context }, signal));
   } catch {
+    // Offline, aborted or rejected: by design the browser composes the same rules-based brief,
+    // and the UI labels its source ("Written from your plan's rules").
     return composeBrief(context);
   }
 }
@@ -84,6 +90,8 @@ export async function askSmogwise(
   try {
     return await request('/api/ask', AskReply, postJson({ question, context, language }, signal));
   } catch {
+    // Offline or rejected: by design the browser answers from the same rules (safety first), and
+    // the UI labels the answer's source.
     return rulesAnswer(question, context, language);
   }
 }

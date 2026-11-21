@@ -1,9 +1,9 @@
 /** Air-quality data as the engine consumes it (docs/02 §4) and the place search contract. */
 import * as z from 'zod/mini';
 
-import { Location } from './profile.js';
 import { MAX_PM25 } from '../limits.js';
 import { round } from '../time.js';
+import { Location } from './profile.js';
 
 /** Hours of forecast kept after trimming the upstream response. */
 export const MAX_HOURS = 48;

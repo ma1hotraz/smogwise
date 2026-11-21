@@ -2,10 +2,10 @@
 import type { Express } from 'express';
 
 import { GeminiClient } from './ai/client.js';
-import { createGeminiService, rulesService, type AiService } from './ai/service.js';
+import { type AiService, createGeminiService, rulesService } from './ai/service.js';
 import { createApp } from './app.js';
-import { systemClock, type Clock } from './clock.js';
-import { loadConfig, type Config } from './config.js';
+import { type Clock, systemClock } from './clock.js';
+import { type Config, loadConfig } from './config.js';
 import { createLogger, type Logger } from './logger.js';
 import { createOpenMeteo } from './upstream/openMeteo.js';
 

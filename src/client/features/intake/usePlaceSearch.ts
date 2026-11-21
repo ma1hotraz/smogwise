@@ -1,8 +1,8 @@
 /** Debounced, abortable place search with an announced status (docs/06 §2 combobox). */
 import { useEffect, useState } from 'preact/hooks';
 
-import { searchPlaces } from '../../lib/api.js';
 import type { Location } from '../../../shared/schema/profile.js';
+import { searchPlaces } from '../../lib/api.js';
 
 const DEBOUNCE_MS = 300;
 

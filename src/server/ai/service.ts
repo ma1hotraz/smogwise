@@ -5,6 +5,8 @@
  */
 import { createHash } from 'node:crypto';
 
+import type * as z from 'zod/mini';
+
 import { composeBrief } from '../../shared/ai/fallback.js';
 import { rulesAnswer } from '../../shared/ai/rules.js';
 import {
@@ -14,20 +16,19 @@ import {
   unknownNumbers,
 } from '../../shared/ai/safety.js';
 import {
+  type AiContext,
   ANSWER_JSON_SCHEMA,
   AnswerOutput,
-  BRIEF_JSON_SCHEMA,
-  BriefOutput,
-  type AiContext,
   type AskRequest,
   type AskResponse,
+  BRIEF_JSON_SCHEMA,
+  BriefOutput,
   type BriefResponse,
 } from '../../shared/schema/ai.js';
 import { TtlCache } from '../cache.js';
 import type { Logger } from '../logger.js';
 import type { AiClient } from './client.js';
 import { askPrompt, briefPrompt, systemPrompt } from './prompts.js';
-import type * as z from 'zod/mini';
 
 const BRIEF_TOKENS = 300;
 const ANSWER_TOKENS = 500;

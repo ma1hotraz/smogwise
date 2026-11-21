@@ -1,10 +1,10 @@
 /** AL01–AL06 — safety alerts, most serious first (docs/03). */
 import type { AirSource } from '../schema/air.js';
 import type { Household, Lifestyle } from '../schema/profile.js';
-import { ALERT_COPY, fill, SENSITIVE_LABELS, type Copy } from './data/copy.js';
+import { ALERT_COPY, type Copy, fill, SENSITIVE_LABELS } from './data/copy.js';
 import { burnsFuelIndoors } from './data/factors.js';
-import type { Alert, AlertLevel, RuleId, SensitiveGroup, Tier } from './types.js';
 import { TIER } from './data/scales.js';
+import type { Alert, AlertLevel, RuleId, SensitiveGroup, Tier } from './types.js';
 
 interface AlertContext {
   lifestyle: Lifestyle;

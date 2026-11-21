@@ -2,9 +2,9 @@
  * Deterministic answers when the model is unavailable (docs/04 §7). Used by the server and, if
  * the server is unreachable, by the browser — so Ask Smogwise always answers from the plan.
  */
-import type { AiContext, AskResponse, BriefResponse, Language } from '../schema/ai.js';
-import type { RuleId } from '../engine/types.js';
 import { TIER } from '../engine/data/scales.js';
+import type { RuleId } from '../engine/types.js';
+import type { AiContext, AskResponse, BriefResponse, Language } from '../schema/ai.js';
 
 type Intent =
   'exercise' | 'children' | 'mask' | 'purifier' | 'windows' | 'commute' | 'heating' | 'general';

@@ -3,10 +3,10 @@ import { useState } from 'preact/hooks';
 
 import { formatGrams, scaleImpact } from '../../../shared/engine/community.js';
 import type { Plan, Swap } from '../../../shared/engine/types.js';
+import { swapIsOn } from '../../../shared/engine/whatIf.js';
 import type { Location } from '../../../shared/schema/profile.js';
 import { NumberField } from '../../components/Fields.js';
 import { formatInt } from '../../lib/labels.js';
-import { swapIsOn } from '../../../shared/engine/whatIf.js';
 
 interface CommunityPanelProps {
   plan: Plan;

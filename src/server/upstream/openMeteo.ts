@@ -5,9 +5,9 @@
  */
 import * as z from 'zod/mini';
 
-import { MAX_HOURS, type AirData, type HourlyPoint } from '../../shared/schema/air.js';
-import { Location } from '../../shared/schema/profile.js';
 import { MAX_PM25 } from '../../shared/limits.js';
+import { type AirData, type HourlyPoint, MAX_HOURS } from '../../shared/schema/air.js';
+import { Location } from '../../shared/schema/profile.js';
 import { round } from '../../shared/time.js';
 
 export type FetchFn = (input: URL, init: RequestInit) => Promise<Response>;

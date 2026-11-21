@@ -7,7 +7,7 @@ import { IntakeForm } from './features/intake/IntakeForm.js';
 import { useAnnounce } from './lib/announcer.js';
 import { lazyComponent } from './lib/lazy.js';
 import { usePrefs } from './lib/prefs.js';
-import { forgetEverything, loadProfile, saveProfile, type Prefs } from './lib/storage.js';
+import { forgetEverything, loadProfile, type Prefs, saveProfile } from './lib/storage.js';
 
 /** The plan view carries the decision engine; it is a separate chunk prefetched from main.tsx. */
 export const loadPlanView = () => import('./features/plan/PlanView.js').then((m) => m.PlanView);

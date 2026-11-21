@@ -1,18 +1,17 @@
 /** First screen: sample households for a one-click plan, or the family's own details (F1). */
 import { useRef, useState } from 'preact/hooks';
 
-import { useFocusOnMount } from '../../lib/focus.js';
-
 import { SAMPLES } from '../../../shared/samples.js';
 import {
-  NO_INDOOR_SOURCES,
-  Profile,
   type Household,
   type Lifestyle,
   type Location,
+  NO_INDOOR_SOURCES,
+  Profile,
 } from '../../../shared/schema/profile.js';
-import { LocationField } from './LocationField.js';
+import { useFocusOnMount } from '../../lib/focus.js';
 import { HomeFields } from './HomeFields.js';
+import { LocationField } from './LocationField.js';
 import { HouseholdFields, TravelFields } from './ProfileFields.js';
 
 const DEFAULT_HOUSEHOLD: Household = {

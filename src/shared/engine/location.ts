@@ -1,6 +1,6 @@
 /** L02 — GRAP stage for Delhi NCR; L03 — where to report burning (docs/03). */
-import { DELHI, GRAP_FLOORS } from './data/scales.js';
 import { REPORTING, REPORTING_DEFAULT } from './data/regions.js';
+import { DELHI, GRAP_FLOORS } from './data/scales.js';
 import type { GrapStage } from './types.js';
 
 const EARTH_RADIUS_KM = 6371;

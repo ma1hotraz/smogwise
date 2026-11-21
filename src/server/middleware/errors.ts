@@ -1,10 +1,11 @@
 /** Not-found and central error handlers: generic JSON bodies, details only in logs. */
 import type { ErrorRequestHandler, RequestHandler } from 'express';
 
+import { sendError } from '../httpErrors.js';
 import type { Logger } from '../logger.js';
 import { requestIdOf } from '../requestId.js';
-import { sendError } from '../httpErrors.js';
 
+/** 404 for any route that matched nothing. */
 export const notFound: RequestHandler = (_req, res) => {
   sendError(res, 'not_found');
 };

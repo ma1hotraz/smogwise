@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { indoorHacks } from '../../../src/shared/engine/hacks.js';
-import { choicesFor } from '../../../src/shared/engine/whatIf.js';
 import { heatingTradeOff, swapsFor } from '../../../src/shared/engine/swaps.js';
+import { choicesFor } from '../../../src/shared/engine/whatIf.js';
 import type { Lifestyle } from '../../../src/shared/schema/profile.js';
 import { baseProfile, sample } from '../../helpers/fixtures.js';
 

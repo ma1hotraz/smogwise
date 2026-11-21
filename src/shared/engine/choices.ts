@@ -1,8 +1,8 @@
 /** What-if choices: the engine's default recommendations and how choices change the day. */
 import { INDOOR_SOURCES, type Lifestyle } from '../schema/profile.js';
 import { MODES } from './data/factors.js';
-import type { Choices, Tier, Windows } from './types.js';
 import { TIER } from './data/scales.js';
+import type { Choices, Tier, Windows } from './types.js';
 
 /** Free, no-regret actions the plan applies by default (R03, R04, H04–H09). */
 export function recommendedChoices(lifestyle: Lifestyle, tierSensitive: Tier): Choices {

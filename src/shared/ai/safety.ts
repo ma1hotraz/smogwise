@@ -2,8 +2,8 @@
  * Deterministic safety layer for Ask Smogwise (docs/04 §6): red-flag symptoms are answered without
  * a model, questions are sanitised, and model text is checked for invented numbers.
  */
-import type { AiContext, AskResponse, Language } from '../schema/ai.js';
 import { MAX_QUESTION_CHARS } from '../limits.js';
+import type { AiContext, AskResponse, Language } from '../schema/ai.js';
 
 const RED_FLAGS = [
   'chest pain',

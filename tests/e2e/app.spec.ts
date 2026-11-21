@@ -3,7 +3,7 @@
  * routed to fixtures, so no test reaches the network.
  */
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 import { localHourKey } from '../../src/shared/time.js';
 

@@ -1,10 +1,10 @@
 /** E — inhaled dose over a typical day, by micro-environment (docs/03). */
 import type { Lifestyle } from '../schema/profile.js';
+import { round } from '../time.js';
 import { cigarettesFor } from './aqi.js';
 import { DAY, MODES, N95_FACTOR, RATE } from './data/factors.js';
-import { indoorPm, type HomeState } from './indoor.js';
+import { type HomeState, indoorPm } from './indoor.js';
 import type { Dose, MicroEnv } from './types.js';
-import { round } from '../time.js';
 
 const ENVS: readonly MicroEnv[] = ['sleep', 'home', 'work', 'commute', 'exercise'];
 const MAX_COMMUTE_MIN = 180;

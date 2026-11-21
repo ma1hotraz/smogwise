@@ -2,8 +2,8 @@
 import { INDOOR_SOURCES, type IndoorSource, type Lifestyle } from '../schema/profile.js';
 import { INDOOR } from './data/factors.js';
 import { homeState, indoorPm, purifierVerdict } from './indoor.js';
-import { choicesFor } from './whatIf.js';
 import type { Cost, Hack, HackChoice, RuleId } from './types.js';
+import { choicesFor } from './whatIf.js';
 
 const SOURCE_HACKS: Record<
   IndoorSource,

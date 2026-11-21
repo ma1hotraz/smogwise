@@ -1,7 +1,7 @@
 /** Household and travel fieldsets of the intake form (docs/01 F1), driven by field tables. */
+import type { Household, Lifestyle } from '../../../shared/schema/profile.js';
 import { CheckField, NumberField, SelectField } from '../../components/Fields.js';
 import { EXERCISE_OPTIONS, HOUR_OPTIONS, MODE_OPTIONS } from '../../lib/labels.js';
-import type { Household, Lifestyle } from '../../../shared/schema/profile.js';
 import type { HouseholdProps, LifestyleProps } from './fieldProps.js';
 
 type CountKey = 'adults' | 'over65' | 'under5' | 'children';

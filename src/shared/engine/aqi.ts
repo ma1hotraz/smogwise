@@ -1,7 +1,7 @@
 /** A01 — index scale and band; A06 — cigarette equivalence (docs/03). */
+import { round } from '../time.js';
 import { BREAKPOINTS, CIGARETTE_UG_M3 } from './data/scales.js';
 import type { Band, Level, Scale } from './types.js';
-import { round } from '../time.js';
 
 const MAX_INDEX = 500;
 const TOP_LEVEL: Level = 5;

@@ -1,13 +1,13 @@
 /** Fakes for the injected server dependencies: no network, no model, fixed clock. */
-import { buildContext } from '../../src/shared/ai/context.js';
-import { buildPlan } from '../../src/shared/engine/plan.js';
-import type { AiContext } from '../../src/shared/schema/ai.js';
 import type { AiClient, GenerateArgs } from '../../src/server/ai/client.js';
 import { createGeminiService, rulesService } from '../../src/server/ai/service.js';
 import { createApp } from '../../src/server/app.js';
 import type { Config } from '../../src/server/config.js';
-import type { Logger, LogFields } from '../../src/server/logger.js';
+import type { LogFields, Logger } from '../../src/server/logger.js';
 import { createOpenMeteo, type FetchFn } from '../../src/server/upstream/openMeteo.js';
+import { buildContext } from '../../src/shared/ai/context.js';
+import { buildPlan } from '../../src/shared/engine/plan.js';
+import type { AiContext } from '../../src/shared/schema/ai.js';
 import { NOW, sample, winterAir } from './fixtures.js';
 
 /** A scripted model: each call returns (or throws) the next item; records every call. */

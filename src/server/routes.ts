@@ -1,16 +1,16 @@
 /** HTTP routes (docs/02 §5). Every input is parsed with zod before use. */
-import { Router, type RequestHandler, type Response } from 'express';
+import { type RequestHandler, type Response, Router } from 'express';
 import type * as z from 'zod/mini';
 
 import { AskRequest, BriefRequest } from '../shared/schema/ai.js';
-import { AirQuery, GeocodeQuery, roundCoord, type AirData } from '../shared/schema/air.js';
+import { type AirData, AirQuery, GeocodeQuery, roundCoord } from '../shared/schema/air.js';
+import type { Location } from '../shared/schema/profile.js';
 import type { AiService } from './ai/service.js';
 import { TtlCache } from './cache.js';
 import type { Clock } from './clock.js';
-import type { Logger } from './logger.js';
-import { UpstreamError, type OpenMeteo } from './upstream/openMeteo.js';
 import { sendError } from './httpErrors.js';
-import type { Location } from '../shared/schema/profile.js';
+import type { Logger } from './logger.js';
+import { type OpenMeteo, UpstreamError } from './upstream/openMeteo.js';
 
 const AIR_TTL_MS = 30 * 60_000;
 const GEOCODE_TTL_MS = 24 * 60 * 60_000;

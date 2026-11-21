@@ -4,11 +4,10 @@ import path from 'node:path';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 
-import { sharmaContext } from '../../helpers/fakes.js';
-import { generateContent } from '../../helpers/genai.js';
-
 import { bootstrap } from '../../../src/server/bootstrap.js';
 import { CSP_DIRECTIVES, PERMISSIONS_POLICY } from '../../../src/server/middleware/security.js';
+import { sharmaContext } from '../../helpers/fakes.js';
+import { generateContent } from '../../helpers/genai.js';
 
 vi.mock('@google/genai', async (importActual) =>
   (await import('../../helpers/genai.js')).fakeGenAiModule(importActual),

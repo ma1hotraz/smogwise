@@ -9,7 +9,7 @@
 | CSS (gzip)                  | ≤ 8 kB                            |
 | Web fonts                   | 0 bytes                           |
 | Images                      | inline SVG only (favicon ≤ 1 kB)  |
-| `buildPlan` average         | < 2 ms (asserted over 1,000 runs) |
+| `buildPlan` median          | < 2 ms (asserted over 1,000 runs) |
 
 ## 2. Techniques
 
@@ -37,4 +37,4 @@
 ## 3. Measuring
 
 - `npm run build && node scripts/check-bundle.mjs` prints sizes and fails on budget breach.
-- `tests/unit/engine/perf.test.ts` asserts the `buildPlan` budget.
+- `tests/unit/engine/perf.test.ts` asserts the `buildPlan` budget on the median of 1,000 runs (robust on a busy CI machine).

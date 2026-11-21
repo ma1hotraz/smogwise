@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
+import { renderHook } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 
+import { useAnnounce } from '../../src/client/lib/announcer.js';
 import { askSmogwise, fetchAir, requestBrief, searchPlaces } from '../../src/client/lib/api.js';
 import { countryFromTimezone, placeLabel } from '../../src/client/lib/geo.js';
 import {
@@ -10,9 +12,6 @@ import {
   scaleName,
   tierName,
 } from '../../src/client/lib/labels.js';
-import { renderHook } from '@testing-library/preact';
-
-import { useAnnounce } from '../../src/client/lib/announcer.js';
 import { canSpeak } from '../../src/client/lib/speech.js';
 import {
   forgetEverything,
@@ -135,6 +134,7 @@ describe('what-if mapping', () => {
   it('switches hacks on and off on top of the engine defaults', () => {
     const current = { removeSources: ['incense', 'candles'] as const };
     expect(hackIsOn({ kind: 'removeSource', source: 'incense' }, current)).toBe(true);
+    expect(hackIsOn({ kind: 'removeSource', source: 'incense' }, {})).toBe(false);
     expect(toggleHack({ kind: 'removeSource', source: 'incense' }, {}, current, false)).toEqual({
       removeSources: ['candles'],
     });

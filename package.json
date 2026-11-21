@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Smogwise \u2014 a GenAI clean-air companion that helps families and communities get through severe winter smog.",
+  "description": "Smogwise — a GenAI clean-air companion that helps families and communities get through severe winter smog.",
   "keywords": [
     "air-quality",
     "pm2.5",
@@ -73,6 +73,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "fast-check": "^4.10.2",
     "globals": "^17.13.0",
     "jscpd": "^4.3.0",

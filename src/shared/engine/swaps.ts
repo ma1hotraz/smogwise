@@ -1,6 +1,7 @@
 /** S01–S09 — sustainable alternatives with CO₂, PM2.5 and personal-dose impact (docs/03). */
 import type { CommuteMode, Lifestyle } from '../schema/profile.js';
 import { round } from '../time.js';
+import { commutes } from './choices.js';
 import {
   burnsFuelIndoors,
   CAR_MODES,
@@ -9,7 +10,6 @@ import {
   MODES,
   WASTE_BURNING_PM25_G_WEEK,
 } from './data/factors.js';
-import { commutes } from './choices.js';
 import { doseFor, percentChange } from './exposure.js';
 import { homeState } from './indoor.js';
 import type { Choices, RuleId, Swap } from './types.js';

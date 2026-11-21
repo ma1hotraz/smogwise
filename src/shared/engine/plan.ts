@@ -5,8 +5,8 @@
 import type { AirData } from '../schema/air.js';
 import type { Lifestyle, Profile } from '../schema/profile.js';
 import { hourOf, localHourKey, mean, round } from '../time.js';
-import { bandFor, cigarettesFor, indexFor, scaleFor } from './aqi.js';
 import { buildAlerts } from './alerts.js';
+import { bandFor, cigarettesFor, indexFor, scaleFor } from './aqi.js';
 import { applyChoices, commutes, recommendedChoices } from './choices.js';
 import { communityActions } from './community.js';
 import { doseFor, percentChange } from './exposure.js';

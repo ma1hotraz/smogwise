@@ -10,7 +10,7 @@ import type { Choices, Plan } from '../../../shared/engine/types.js';
 import type { AiContext } from '../../../shared/schema/ai.js';
 import type { Profile } from '../../../shared/schema/profile.js';
 import { useAnnounce } from '../../lib/announcer.js';
-import { useAir, type AirStatus } from '../../lib/useAir.js';
+import { type AirStatus, useAir } from '../../lib/useAir.js';
 import { useNow } from '../../lib/useNow.js';
 
 export interface PlanModel {

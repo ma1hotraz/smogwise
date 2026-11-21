@@ -1,6 +1,6 @@
 // Fails the build when the client bundle exceeds the budgets in docs/08_EFFICIENCY.md,
 // or when the client bundle mentions the Gemini key.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 

@@ -1,9 +1,9 @@
 /** Contracts for the AI routes (docs/04 §3, §5). Every string is bounded and pattern-checked. */
 import * as z from 'zod/mini';
 
+import { MAX_QUESTION_CHARS } from '../limits.js';
 import { AirSource } from './air.js';
 import { CommuteMode, PLACE_NAME } from './profile.js';
-import { MAX_QUESTION_CHARS } from '../limits.js';
 
 const RULE_ID = /^(?:A|L|H|E|R|S|C|AL)\d{2}$/;
 const ruleId = z.string().check(z.regex(RULE_ID));

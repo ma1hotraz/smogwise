@@ -1,7 +1,7 @@
 /** Theme and text size (docs/06 §3), applied as attributes on <html>. */
 import { useEffect, useState } from 'preact/hooks';
 
-import { loadPrefs, savePrefs, type Prefs } from './storage.js';
+import { loadPrefs, type Prefs, savePrefs } from './storage.js';
 
 /** Applies preferences to the document root. */
 export function applyPrefs(prefs: Prefs, root: HTMLElement = document.documentElement): void {

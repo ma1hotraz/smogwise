@@ -1,12 +1,13 @@
 /** Browser entry: applies display preferences, renders the app and prefetches the plan chunk. */
-import { render } from 'preact';
-
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/forms.css';
 import './styles/plan.css';
 import './styles/chart.css';
 import './styles/print.css';
+
+import { render } from 'preact';
+
 import { App, loadPlanView } from './App.js';
 import { AnnouncerProvider } from './lib/announcer.js';
 import { applyPrefs } from './lib/prefs.js';

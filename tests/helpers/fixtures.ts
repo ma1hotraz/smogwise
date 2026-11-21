@@ -1,7 +1,7 @@
 /** Shared test fixtures: profiles, air series and a fixed clock. */
+import { SAMPLES } from '../../src/shared/samples.js';
 import type { AirData, AirSource } from '../../src/shared/schema/air.js';
 import type { Lifestyle, Profile } from '../../src/shared/schema/profile.js';
-import { SAMPLES } from '../../src/shared/samples.js';
 
 /** 2026-11-20 10:30 in Delhi (UTC+5:30). */
 export const NOW = new Date('2026-11-20T05:00:00Z');

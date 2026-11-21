@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'preact/hooks';
 
 import { manualAir, seasonalAir } from '../../shared/engine/fallbackAir.js';
-import { roundCoord, type AirData } from '../../shared/schema/air.js';
+import { type AirData, roundCoord } from '../../shared/schema/air.js';
 import type { Location } from '../../shared/schema/profile.js';
 import { fetchAir } from './api.js';
 import { loadCachedAir, saveCachedAir } from './storage.js';

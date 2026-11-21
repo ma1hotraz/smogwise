@@ -3,13 +3,13 @@ import type { VNode } from 'preact';
 import { useState } from 'preact/hooks';
 
 import type { Profile } from '../../../shared/schema/profile.js';
-import { Tabs, type TabItem } from '../../components/Tabs.js';
+import { type TabItem, Tabs } from '../../components/Tabs.js';
 import { lazyComponent } from '../../lib/lazy.js';
 import { AirHeader } from './AirHeader.js';
 import { HomePanel } from './HomePanel.js';
 import { SwapsPanel } from './SwapsPanel.js';
 import { TodayPanel } from './TodayPanel.js';
-import { usePlanModel, type PlanModel } from './usePlanModel.js';
+import { type PlanModel, usePlanModel } from './usePlanModel.js';
 
 const CommunityPanel = lazyComponent(() =>
   import('../community/CommunityPanel.js').then((m) => m.CommunityPanel),

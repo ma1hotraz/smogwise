@@ -26,6 +26,7 @@ function read(storage: Storage, key: string): unknown {
     const raw = storage.getItem(key);
     return raw === null ? null : (JSON.parse(raw) as unknown);
   } catch {
+    // Unreadable or unparsable storage is treated as empty; the caller then uses its default.
     return null;
   }
 }

@@ -8,8 +8,8 @@ import { BandChip, HourStrip } from '../../src/client/components/AirVisuals.js';
 import { CheckField, NumberField, SelectField } from '../../src/client/components/Fields.js';
 import { AlertList, DoseMeter } from '../../src/client/components/PlanBits.js';
 import { Tabs } from '../../src/client/components/Tabs.js';
-import { WINTER_DAY } from '../helpers/fixtures.js';
 import { expectNoViolations } from '../helpers/a11y.js';
+import { WINTER_DAY } from '../helpers/fixtures.js';
 
 const TABS = [
   { id: 'a', label: 'First' },

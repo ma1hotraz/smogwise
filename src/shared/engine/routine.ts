@@ -1,13 +1,13 @@
 /** R01–R09 — the time-slotted low-emission day (docs/03). */
 import type { Household, Lifestyle } from '../schema/profile.js';
 import { formatHour, formatWindow, round } from '../time.js';
-import { ROUTINE_COPY, fill } from './data/copy.js';
-import { burnsFuelIndoors, MODES, N95_FACTOR } from './data/factors.js';
 import { commutes } from './choices.js';
-import { indoorPm, type HomeState } from './indoor.js';
-import type { RoutineStep, RuleId, Tier, Windows } from './types.js';
-import { TIER } from './data/scales.js';
+import { fill, ROUTINE_COPY } from './data/copy.js';
+import { burnsFuelIndoors, MODES, N95_FACTOR } from './data/factors.js';
 import { AIRING_MINUTES, ROUTINE_HOURS } from './data/routine.js';
+import { TIER } from './data/scales.js';
+import { type HomeState, indoorPm } from './indoor.js';
+import type { RoutineStep, RuleId, Tier, Windows } from './types.js';
 
 export interface RoutineContext {
   lifestyle: Lifestyle;

@@ -1,10 +1,10 @@
 /** Ask Smogwise: questions about today's plan, answered by Gemini or by the rules (F6). */
 import { useState } from 'preact/hooks';
 
+import { MAX_QUESTION_CHARS } from '../../../shared/limits.js';
 import type { AiContext, AskResponse, Language } from '../../../shared/schema/ai.js';
 import { SelectField } from '../../components/Fields.js';
-import { useAsk, type Answer } from './useAsk.js';
-import { MAX_QUESTION_CHARS } from '../../../shared/limits.js';
+import { type Answer, useAsk } from './useAsk.js';
 
 const SOURCE_TEXT: Record<AskResponse['source'], string> = {
   gemini: 'Answered by Gemini using only your plan’s figures.',

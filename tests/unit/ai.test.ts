@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { askPrompt, briefPrompt, systemPrompt } from '../../src/server/ai/prompts.js';
 import { buildContext } from '../../src/shared/ai/context.js';
 import { answerByIntent, composeBrief, detectIntent } from '../../src/shared/ai/fallback.js';
 import {
@@ -10,9 +11,8 @@ import {
 } from '../../src/shared/ai/safety.js';
 import { buildPlan } from '../../src/shared/engine/plan.js';
 import { AiContext } from '../../src/shared/schema/ai.js';
-import { askPrompt, briefPrompt, systemPrompt } from '../../src/server/ai/prompts.js';
-import { flatAir, NOW, sample, winterAir } from '../helpers/fixtures.js';
 import { sharmaContext } from '../helpers/fakes.js';
+import { flatAir, NOW, sample, winterAir } from '../helpers/fixtures.js';
 
 const ctx = sharmaContext();
 

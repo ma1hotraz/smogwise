@@ -1,4 +1,12 @@
 /** The "Your home" fieldset: fuels, heating, room and indoor habits (docs/01 F1). */
+import { MAX_CADR } from '../../../shared/limits.js';
+import {
+  COOKING_FUELS,
+  HEATING_TYPES,
+  INDOOR_SOURCES,
+  type Lifestyle,
+  TIGHTNESS,
+} from '../../../shared/schema/profile.js';
 import { CheckField, NumberField, SelectField } from '../../components/Fields.js';
 import {
   COOKING_LABELS,
@@ -6,14 +14,6 @@ import {
   SOURCE_LABELS,
   TIGHTNESS_LABELS,
 } from '../../lib/labels.js';
-import { MAX_CADR } from '../../../shared/limits.js';
-import {
-  COOKING_FUELS,
-  HEATING_TYPES,
-  INDOOR_SOURCES,
-  TIGHTNESS,
-  type Lifestyle,
-} from '../../../shared/schema/profile.js';
 import type { LifestyleProps } from './fieldProps.js';
 
 const optionsOf = <T extends string>(values: readonly T[], labels: Record<T, string>) =>

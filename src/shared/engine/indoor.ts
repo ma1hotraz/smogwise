@@ -1,5 +1,6 @@
 /** I — indoor mass-balance model and purifier sizing (docs/03). */
 import { INDOOR_SOURCES, type Lifestyle } from '../schema/profile.js';
+import { round } from '../time.js';
 import {
   AIR_EXCHANGE,
   COOKING_DELTA,
@@ -8,7 +9,6 @@ import {
   SOURCE_DELTA,
 } from './data/factors.js';
 import type { Choices, PurifierVerdict } from './types.js';
-import { round } from '../time.js';
 
 /** Physical state of the main room that the model needs. */
 export interface HomeState {

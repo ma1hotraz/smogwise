@@ -2,13 +2,13 @@
 import { useRef, useState } from 'preact/hooks';
 
 import type { Plan } from '../../../shared/engine/types.js';
+import { MAX_PM25 } from '../../../shared/limits.js';
 import type { Location } from '../../../shared/schema/profile.js';
 import { formatWindow } from '../../../shared/time.js';
 import { BandChip } from '../../components/AirVisuals.js';
-import { scaleName, tierName } from '../../lib/labels.js';
 import { useFocusOnMount } from '../../lib/focus.js';
+import { scaleName, tierName } from '../../lib/labels.js';
 import type { AirStatus } from '../../lib/useAir.js';
-import { MAX_PM25 } from '../../../shared/limits.js';
 
 const STATUS_TEXT: Record<AirStatus, string> = {
   loading: 'Fetching the live forecast… showing a seasonal estimate meanwhile.',
