@@ -4,17 +4,14 @@ import path from 'node:path';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 
+import { generateContent } from '../../helpers/genai.js';
+
 import { bootstrap } from '../../../src/server/bootstrap.js';
 import { CSP_DIRECTIVES, PERMISSIONS_POLICY } from '../../../src/server/middleware/security.js';
 
-const generateContent = vi.fn();
-vi.mock('@google/genai', async (importActual) => {
-  const actual = await importActual<typeof import('@google/genai')>();
-  class FakeGoogleGenAI {
-    models = { generateContent };
-  }
-  return { ...actual, GoogleGenAI: FakeGoogleGenAI };
-});
+vi.mock('@google/genai', async (importActual) =>
+  (await import('../../helpers/genai.js')).fakeGenAiModule(importActual),
+);
 
 describe('bootstrap', () => {
   it('logs token usage (counts only, never content) after a model call', async () => {

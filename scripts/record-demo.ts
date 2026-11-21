@@ -1,6 +1,7 @@
 /**
  * Records the submission demo by driving the LIVE site (real air data, real Gemini) in Chromium.
- * Run: npx tsx scripts/record-demo.ts   → demo/raw/*.webm, then convert with ffmpeg (see README).
+ * Run: npm run demo   → demo/raw/*.webm; convert with the ffmpeg command in README "Demo video".
+ * The pauses pace the video for viewers; they are not waits for the app (those use locators).
  */
 import { chromium, type Page } from '@playwright/test';
 

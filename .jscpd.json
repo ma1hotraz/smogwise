@@ -1,5 +1,5 @@
 {
-  "path": ["src", "api", "scripts"],
+  "path": ["src", "api", "scripts", "tests"],
   "minLines": 5,
   "minTokens": 50,
   "threshold": 0,

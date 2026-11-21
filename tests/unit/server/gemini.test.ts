@@ -1,15 +1,11 @@
 import { ApiError } from '@google/genai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const generateContent = vi.fn();
+import { generateContent } from '../../helpers/genai.js';
 
-vi.mock('@google/genai', async (importActual) => {
-  const actual = await importActual<typeof import('@google/genai')>();
-  class FakeGoogleGenAI {
-    models = { generateContent };
-  }
-  return { ...actual, GoogleGenAI: FakeGoogleGenAI };
-});
+vi.mock('@google/genai', async (importActual) =>
+  (await import('../../helpers/genai.js')).fakeGenAiModule(importActual),
+);
 
 const { GeminiClient } = await import('../../../src/server/ai/client.js');
 

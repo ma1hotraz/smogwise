@@ -48,7 +48,7 @@ export default tseslint.config(
   {
     files: ['src/**/*.tsx'],
     rules: {
-      'max-lines-per-function': ['error', { max: 120, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
     },
   },
   {
@@ -86,6 +86,8 @@ export default tseslint.config(
     files: ['src/client/**/*.{ts,tsx}', 'tests/components/**/*.tsx'],
     languageOptions: { globals: globals.browser },
     plugins: { react, 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y },
+    // Preact implements the React 18 component API; eslint-plugin-react needs a React version to
+    // pick its rules, and `h` is Preact's JSX factory.
     settings: { react: { version: '18.3', pragma: 'h' } },
     rules: {
       ...react.configs.recommended.rules,

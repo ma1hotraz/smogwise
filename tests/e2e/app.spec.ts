@@ -5,8 +5,12 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-const today = new Date().toISOString().slice(0, 10);
-const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+import { localHourKey } from '../../src/shared/time.js';
+
+// Dates in the fixture's own timezone, so the hours are "today" whatever the runner's clock says.
+const TIMEZONE = 'Asia/Kolkata';
+const today = localHourKey(new Date(), TIMEZONE).slice(0, 10);
+const tomorrow = localHourKey(new Date(Date.now() + 86_400_000), TIMEZONE).slice(0, 10);
 const SHAPE = [
   170, 175, 178, 180, 180, 178, 175, 171, 160, 140, 120, 105, 95, 88, 86, 90, 110, 130, 150, 160,
   165, 168, 170, 170,
@@ -14,7 +18,7 @@ const SHAPE = [
 const AIR = {
   source: 'open-meteo',
   fetchedAt: new Date().toISOString(),
-  timezone: 'Asia/Kolkata',
+  timezone: TIMEZONE,
   hourly: [today, tomorrow].flatMap((day) =>
     SHAPE.map((pm25, h) => ({
       time: `${day}T${String(h).padStart(2, '0')}:00`,
@@ -47,6 +51,25 @@ async function setup(page: Page): Promise<string[]> {
   await page.route('**/api/air?**', (route) => route.fulfill({ json: AIR }));
   await page.route('**/api/geocode?**', (route) => route.fulfill({ json: PLACES }));
   return problems;
+}
+
+/** Each tab's own heading: waiting for it means the (possibly lazy) panel has rendered. */
+const TAB_HEADINGS: Record<string, string> = {
+  Today: 'Your low-emission day',
+  'Home air': 'Cleaner air at home',
+  'Swaps & impact': 'Swaps and their impact',
+  Community: 'Clean air is a group effort',
+  'Ask Smogwise': 'Ask Smogwise',
+};
+const TABS = Object.keys(TAB_HEADINGS);
+
+async function openTab(page: Page, tab: string): Promise<void> {
+  await page.getByRole('tab', { name: tab }).click();
+  await expect(
+    page
+      .getByRole('tabpanel')
+      .getByRole('heading', { name: TAB_HEADINGS[tab] ?? tab, exact: true }),
+  ).toBeVisible();
 }
 
 async function expectNoAxeViolations(page: Page): Promise<void> {
@@ -84,10 +107,8 @@ test('every view has zero axe violations in light and dark themes', async ({ pag
   await openSample(page, /Rohit/);
   for (const theme of ['light', 'dark']) {
     await page.getByLabel('Theme').selectOption(theme);
-    for (const tab of ['Today', 'Home air', 'Swaps & impact', 'Community', 'Ask Smogwise']) {
-      await page.getByRole('tab', { name: tab }).click();
-      await expect(page.getByRole('tabpanel')).toBeVisible();
-      await page.waitForTimeout(100);
+    for (const tab of TABS) {
+      await openTab(page, tab);
       await expectNoAxeViolations(page);
     }
   }
@@ -204,9 +225,8 @@ test.describe('user style overrides', () => {
 test('every interactive target is at least 24 × 24 px (2.5.8)', async ({ page }) => {
   await setup(page);
   await openSample(page, /Rohit/);
-  for (const tab of ['Today', 'Home air', 'Swaps & impact', 'Community', 'Ask Smogwise']) {
-    await page.getByRole('tab', { name: tab }).click();
-    await page.waitForTimeout(100);
+  for (const tab of TABS) {
+    await openTab(page, tab);
     const small = await page.evaluate(() =>
       [...document.querySelectorAll('button, input, select, textarea, summary, [role="tab"]')]
         .map((el) => ({ el, box: el.getBoundingClientRect() }))

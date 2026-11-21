@@ -4,16 +4,37 @@
   "private": true,
   "type": "module",
   "description": "Smogwise \u2014 a GenAI clean-air companion that helps families and communities get through severe winter smog.",
+  "keywords": [
+    "air-quality",
+    "pm2.5",
+    "smog",
+    "gemini",
+    "genai",
+    "accessibility",
+    "preact",
+    "express"
+  ],
+  "homepage": "https://smogwise.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ma1hotraz/smogwise.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ma1hotraz/smogwise/issues"
+  },
+  "author": "ma1hotraz",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "dev": "concurrently -k -n server,client \"tsx watch src/server/index.ts\" \"vite\"",
     "build": "npm run build:client && npm run build:server",
-    "build:client": "NODE_ENV=production vite build",
+    "build:client": "vite build",
     "build:server": "esbuild src/server/index.ts --bundle --platform=node --format=esm --target=node22 --minify --legal-comments=none --packages=bundle --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=dist/server.mjs",
-    "start": "NODE_ENV=production node dist/server.mjs",
+    "start": "node dist/server.mjs",
     "lint": "eslint . --max-warnings 0",
+    "lint:dead": "knip",
+    "lint:dupes": "jscpd",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
@@ -22,9 +43,8 @@
     "test:e2e": "playwright test",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check": "npm run lint && npm run lint:dead && npm run lint:dupes && npm run format && npm run typecheck && npm test && npm run build && npm run check:bundle",
-    "prepare": "git config core.hooksPath .githooks || true",
-    "lint:dead": "knip",
-    "lint:dupes": "jscpd"
+    "demo": "tsx scripts/record-demo.ts",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@google/genai": "^3.6.1",

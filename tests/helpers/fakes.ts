@@ -24,7 +24,7 @@ export class FakeAi implements AiClient {
   }
 }
 
-export interface Captured {
+interface Captured {
   level: string;
   msg: string;
   fields: LogFields;

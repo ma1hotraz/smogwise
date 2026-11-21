@@ -22,7 +22,7 @@ import {
   saveCachedAir,
   saveProfile,
 } from '../../src/client/lib/storage.js';
-import { hackIsOn, swapIsOn, toggleHack, toggleSwap } from '../../src/client/lib/whatIf.js';
+import { hackIsOn, swapIsOn, toggleHack, toggleSwap } from '../../src/shared/engine/whatIf.js';
 import { liveAir, stubApi } from '../helpers/browser.js';
 import { sharmaContext } from '../helpers/fakes.js';
 import { sample } from '../helpers/fixtures.js';
@@ -37,6 +37,11 @@ describe('storage', () => {
     );
     expect(loadProfile()).toBeNull();
     localStorage.setItem('smogwise.profile.v1', '{not json');
+    expect(loadProfile()).toBeNull();
+  });
+
+  it('rejects a stored profile with unknown fields (strict schema)', () => {
+    localStorage.setItem('smogwise.profile.v1', JSON.stringify({ ...sample('chen'), admin: true }));
     expect(loadProfile()).toBeNull();
   });
 

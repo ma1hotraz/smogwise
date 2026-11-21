@@ -2,5 +2,5 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": ["api/index.ts", "scripts/*.{ts,mjs}", "tests/**/*.{test,spec}.{ts,tsx}"],
   "project": ["src/**/*.{ts,tsx}", "api/**/*.ts", "scripts/**/*.{ts,mjs}", "tests/**/*.{ts,tsx}"],
-  "ignoreExportsUsedInFile": true
+  "ignoreExportsUsedInFile": false
 }
