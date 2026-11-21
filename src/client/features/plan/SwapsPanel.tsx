@@ -1,22 +1,9 @@
 /** Swaps & impact: sustainable alternatives with their direct impact, toggled live (F4). */
-import type { Choices, Plan } from '../../../shared/engine/types.js';
 import { swapIsOn, toggleSwap } from '../../../shared/engine/whatIf.js';
 import { CheckField } from '../../components/Fields.js';
 import { DoseMeter } from '../../components/PlanBits.js';
-import { savingText } from '../../lib/labels.js';
-
-interface PanelProps {
-  plan: Plan;
-  choices: Choices;
-  onChoices: (next: Choices) => void;
-}
-
-function doseText(delta: number): string {
-  if (delta === 0) {
-    return 'same dose for you';
-  }
-  return delta < 0 ? `${-delta}% less for you to breathe` : `${delta}% more for you to breathe`;
-}
+import { doseText, savingText } from '../../lib/labels.js';
+import type { PanelProps } from './panelProps.js';
 
 export function SwapsPanel({ plan, choices, onChoices }: PanelProps) {
   return (
@@ -70,7 +57,8 @@ export function SwapsPanel({ plan, choices, onChoices }: PanelProps) {
         </ul>
       )}
       <p class="hint">
-        Figures are estimates from published emission factors; see the README for sources.
+        Figures are estimates from published emission factors; sources are listed in the project
+        documentation (docs/03).
       </p>
     </>
   );

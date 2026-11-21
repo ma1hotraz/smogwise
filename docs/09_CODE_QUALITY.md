@@ -2,19 +2,19 @@
 
 ## 1. Conventions
 
-| Rule                  | Limit / practice                                                                                                                                                   |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| File length           | ≤ 250 lines in `src/` (data tables excepted); no code or style file over 300 lines                                                                                 |
-| Function length       | ≤ 40 lines (components ≤ 60) in `src/`; test files are exempt (their `describe` blocks group cases)                                                                |
-| Cyclomatic complexity | ≤ 10                                                                                                                                                               |
-| Nesting depth         | ≤ 3                                                                                                                                                                |
-| Types                 | No `any`, no `@ts-ignore`, no non-null assertions in `src/`                                                                                                        |
-| Naming                | Domain words from the spec (tier, window, dose, swap, hack)                                                                                                        |
-| Comments              | TSDoc on every exported function in `shared` and `server`; rule ids in code match docs/03                                                                          |
-| Magic numbers         | Domain constants (with sources) live in `engine/data/*` and `shared/limits.ts`; other numbers are named constants                                                  |
-| Errors                | Typed at boundaries; generic HTTP errors; the client's network and storage failures fall back by design, with the reason commented in place                        |
-| Console               | No `console` anywhere, scripts included (`no-console`, repo-wide); scripts write to stdout                                                                         |
-| Side effects          | Server: fetch, AI client, clock and logger are injected. Client: browser globals are confined to adapter modules (`lib/api.ts`, `lib/storage.ts`, `lib/speech.ts`) |
+| Rule                  | Limit / practice                                                                                                                                                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File length           | ≤ 250 lines per TypeScript file in `src/` (lint-enforced); no code or style file over 300 lines                                                                                                                              |
+| Function length       | ≤ 40 lines (components ≤ 60) in `src/`; test files are exempt (their `describe` blocks group cases)                                                                                                                          |
+| Cyclomatic complexity | ≤ 10                                                                                                                                                                                                                         |
+| Nesting depth         | ≤ 3                                                                                                                                                                                                                          |
+| Types                 | No `any`, no `@ts-ignore`, no non-null assertions in `src/`                                                                                                                                                                  |
+| Naming                | Domain words from the spec (tier, window, dose, swap, hack)                                                                                                                                                                  |
+| Comments              | TSDoc on every exported function in `shared` and `server`; rule ids in code match docs/03                                                                                                                                    |
+| Magic numbers         | Domain constants (with sources) live in `engine/data/*` and `shared/limits.ts`; other numbers are named constants                                                                                                            |
+| Errors                | Typed at boundaries; generic HTTP errors; the client's network and storage failures fall back by design, with the reason commented in place                                                                                  |
+| Console               | No `console` anywhere, scripts included (`no-console`, repo-wide); scripts write to stdout                                                                                                                                   |
+| Side effects          | Server: fetch, AI client, clock and logger are injected. Client: browser APIs are used only in `lib/` adapters (`api`, `storage`, `speech`, `prefs`, `print`), the geolocation hook `useMyLocation` and the entry `main.tsx` |
 
 ## 2. Layer boundaries (lint-enforced with `no-restricted-imports`)
 

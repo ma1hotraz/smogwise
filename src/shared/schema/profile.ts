@@ -4,7 +4,14 @@
  */
 import * as z from 'zod/mini';
 
-import { MAX_CADR } from '../limits.js';
+import {
+  DAYS_PER_WEEK,
+  HOUSEHOLD_MAX,
+  MAX_CADR,
+  MAX_COMMUTE_KM,
+  MAX_EXERCISE_MIN,
+  ROOM_M2,
+} from '../limits.js';
 
 const count = (max: number) => z.int().check(z.gte(0), z.lte(max));
 const hour = z.int().check(z.gte(0), z.lte(23));
@@ -69,10 +76,10 @@ export const Location = z.strictObject({
 export type Location = z.infer<typeof Location>;
 
 export const Household = z.strictObject({
-  adults: count(12),
-  under5: count(8),
-  children: count(10),
-  over65: count(8),
+  adults: count(HOUSEHOLD_MAX.adults),
+  under5: count(HOUSEHOLD_MAX.under5),
+  children: count(HOUSEHOLD_MAX.children),
+  over65: count(HOUSEHOLD_MAX.over65),
   pregnant: z.boolean(),
   respiratory: z.boolean(),
   heart: z.boolean(),
@@ -82,20 +89,20 @@ export type Household = z.infer<typeof Household>;
 export const Lifestyle = z.strictObject({
   commute: z.strictObject({
     mode: CommuteMode,
-    km: z.number().check(z.gte(0), z.lte(80)),
-    daysPerWeek: count(7),
+    km: z.number().check(z.gte(0), z.lte(MAX_COMMUTE_KM)),
+    daysPerWeek: count(DAYS_PER_WEEK),
     departHour: hour,
   }),
   exercise: z.strictObject({
     kind: z.enum(['none', 'outdoor', 'indoor']),
     hour,
-    minutes: z.int().check(z.gte(0), z.lte(180)),
+    minutes: z.int().check(z.gte(0), z.lte(MAX_EXERCISE_MIN)),
   }),
   cooking: CookingFuel,
   heating: Heating,
   home: z.strictObject({
     tightness: Tightness,
-    roomM2: z.number().check(z.gte(6), z.lte(100)),
+    roomM2: z.number().check(z.gte(ROOM_M2.min), z.lte(ROOM_M2.max)),
     purifierCadr: z.number().check(z.gte(0), z.lte(MAX_CADR)),
   }),
   sources: z.strictObject({

@@ -9,9 +9,10 @@ import {
 } from '../../../src/shared/engine/fallbackAir.js';
 import { buildPlan } from '../../../src/shared/engine/plan.js';
 import type { Windows } from '../../../src/shared/engine/types.js';
+import { mean, round } from '../../../src/shared/math.js';
 import { SAMPLES } from '../../../src/shared/samples.js';
 import { AirData } from '../../../src/shared/schema/air.js';
-import { formatHour, hourOf, localHourKey, mean, round } from '../../../src/shared/time.js';
+import { formatHour, hourOf, localHourKey } from '../../../src/shared/time.js';
 import { baseProfile, flatAir, NOW, sample, winterAir } from '../../helpers/fixtures.js';
 
 describe('buildPlan', () => {

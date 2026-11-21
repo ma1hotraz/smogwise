@@ -1,7 +1,7 @@
 /** Plain-language labels for profile values and plan figures. */
 import { MODES } from '../../shared/engine/data/factors.js';
 import { TIER_NAMES } from '../../shared/engine/data/scales.js';
-import type { Scale, Tier } from '../../shared/engine/types.js';
+import type { Cost, PurifierVerdict, Scale, Tier } from '../../shared/engine/types.js';
 import {
   COMMUTE_MODES,
   type CommuteMode,
@@ -12,12 +12,9 @@ import {
 } from '../../shared/schema/profile.js';
 import { formatHour } from '../../shared/time.js';
 
-export const MODE_OPTIONS = COMMUTE_MODES.map((mode) => ({
-  value: mode,
-  label: MODES[mode].label,
-}));
-
 export const modeLabel = (mode: CommuteMode): string => MODES[mode].label;
+
+export const MODE_OPTIONS = COMMUTE_MODES.map((mode) => ({ value: mode, label: modeLabel(mode) }));
 
 export const COOKING_LABELS: Record<CookingFuel, string> = {
   lpg: 'LPG or piped gas',
@@ -72,4 +69,45 @@ export function savingText(value: number, unit: string): string {
     return `no change in ${unit}`;
   }
   return value > 0 ? `${value} ${unit} less` : `${-value} ${unit} more`;
+}
+
+export const COST_LABELS: Record<Cost, string> = {
+  free: 'Free',
+  low: 'Low cost',
+  medium: 'Costs more',
+  none: '',
+};
+
+/** A fraction as a whole percentage. */
+export const percent = (fraction: number): number => Math.round(fraction * 100);
+
+const PURIFIER_TEXT: Record<PurifierVerdict['status'], (coverage: number) => string> = {
+  none: () => 'You have no purifier yet; see the first fixes below.',
+  undersized: (c) => `Yours covers ${percent(c)}% of that — too small to keep up.`,
+  adequate: (c) => `Yours covers ${percent(c)}%: it helps, especially with the door shut.`,
+  good: () => 'Yours is big enough. Run it with doors and windows shut.',
+};
+
+/** The purifier verdict as a sentence: the CADR this room needs and how the user's unit compares. */
+export function purifierText(verdict: PurifierVerdict): string {
+  const need = `This room needs a clean-air delivery rate (CADR) of about ${verdict.requiredCadr} m³/h.`;
+  return `${need} ${PURIFIER_TEXT[verdict.status](verdict.coverage)}`;
+}
+
+/** A swap's effect on the user's own dose, in words. */
+export function doseText(delta: number): string {
+  if (delta === 0) {
+    return 'same dose for you';
+  }
+  return delta < 0 ? `${-delta}% less for you to breathe` : `${delta}% more for you to breathe`;
+}
+
+/** The dose meter's label for a percentage reduction (negative = more). */
+export function doseChangeText(reductionPct: number): string {
+  if (reductionPct === 0) {
+    return 'No change yet';
+  }
+  return reductionPct > 0
+    ? `${reductionPct}% less PM2.5 breathed in`
+    : `${-reductionPct}% more PM2.5 breathed in`;
 }

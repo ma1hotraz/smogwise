@@ -2,9 +2,10 @@
  * Air data when live data is unavailable: a seasonal estimate for the place, or the PM2.5 the
  * user typed, both shaped by a typical winter day (docs/02 §2). Labelled in the UI (AL06).
  */
+import { mean, round } from '../math.js';
 import type { AirData, AirSource, HourlyPoint } from '../schema/air.js';
 import type { Location } from '../schema/profile.js';
-import { hourOf, localHourKey, mean, round } from '../time.js';
+import { hourOf, localHourKey } from '../time.js';
 import {
   CITY_WINTER_PM25,
   COUNTRY_WINTER_PM25,

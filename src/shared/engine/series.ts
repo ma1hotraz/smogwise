@@ -1,6 +1,7 @@
 /** Helpers over the hourly forecast series (local wall-clock timestamps). */
+import { mean } from '../math.js';
 import type { HourlyPoint } from '../schema/air.js';
-import { hourOf, mean } from '../time.js';
+import { hourOf } from '../time.js';
 import type { Trend, Window, Windows } from './types.js';
 
 /** Index of the hour containing `nowKey` (last point at or before it; 0 if all are later). */
@@ -47,9 +48,15 @@ export function findWindows(hourly: readonly HourlyPoint[], start: number): Wind
   const clean = candidates.reduce((best, c) => (c.meanPm25 < best.meanPm25 ? c : best));
   const worst = candidates.reduce((top, c) => (c.meanPm25 > top.meanPm25 ? c : top));
   const gap = worst.meanPm25 - clean.meanPm25;
-  return { clean, worst, meaningful: gap >= Math.max(10, 0.2 * worst.meanPm25) };
+  return {
+    clean,
+    worst,
+    meaningful: gap >= Math.max(MEANINGFUL_GAP.minUg, MEANINGFUL_GAP.fraction * worst.meanPm25),
+  };
 }
 
+/** A clean window is worth acting on when it beats the worst by 10 µg/m³ or 20 %, whichever is larger. */
+const MEANINGFUL_GAP = { minUg: 10, fraction: 0.2 };
 const TREND_HOURS = 6;
 const TREND_THRESHOLD = 0.1;
 

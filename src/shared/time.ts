@@ -34,14 +34,3 @@ export function formatHour(hour: number): string {
 export function formatWindow(startHour: number, hours: number, separator = '–'): string {
   return `${formatHour(startHour)}${separator}${formatHour(startHour + hours)}`;
 }
-
-/** Arithmetic mean; 0 for an empty list. */
-export function mean(values: readonly number[]): number {
-  return values.length === 0 ? 0 : values.reduce((sum, v) => sum + v, 0) / values.length;
-}
-
-/** Rounds to a number of decimal places. */
-export function round(value: number, places = 0): number {
-  const f = 10 ** places;
-  return Math.round(value * f) / f;
-}

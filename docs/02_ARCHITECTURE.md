@@ -69,8 +69,8 @@ src/
     cache.ts                   TTL + LRU cache with in-flight de-duplication
     middleware/                security headers and limits, same-origin guard, errors
     upstream/openMeteo.ts      fixed-host fetch with timeout, size cap, schema validation
-    ai/                        AiClient port (Gemini, disabled), prompts, and two AiService strategies:
-                               rulesService and createGeminiService (chosen once in app.ts)
+    ai/                        AiClient port (Gemini), prompts, and two AiService strategies:
+                               rulesService and createGeminiService (chosen once in bootstrap.ts)
   client/
     main.tsx, App.tsx          entry and shell (skip link, preferences)
     components/                Tabs, Fields, AirVisuals (band chip, hour strip), PlanBits (alerts, dose meter)
@@ -79,7 +79,7 @@ src/
     features/community/        scale, actions, printable notice (lazy)
     features/ask/              useAsk (state) and the assistant panel (lazy)
     lib/                       shared client code: api, storage, prefs, geo, labels, speech, announcer,
-                               lazy, focus, and hooks used by several features (useAir, useBrief, useReadAloud)
+                               print, lazy, focus, and hooks used by several features (useAir, useBrief, useReadAloud)
     styles/                    tokens, base, forms, plan, chart and print stylesheets
 api/index.ts                   Vercel serverless entry (same Express app)
 tests/                         unit, property, api, components, e2e, helpers
@@ -87,7 +87,8 @@ scripts/check-bundle.mjs       enforces bundle budgets and the client secret sca
 ```
 
 Convention: a hook used by one feature lives with that feature (`useAsk`, `usePlanModel`, the
-intake hooks); hooks used by several features live in `client/lib`. Components only render.
+intake hooks); hooks used by several features live in `client/lib`. Components hold only UI state (open
+panels, form drafts); plan data, AI calls and announcements live in hooks.
 
 ## 4. Data models (summarised; source of truth is `src/shared/schema/`)
 
@@ -147,17 +148,23 @@ type Plan = {
     scale: 'NAQI' | 'US_AQI';
     trend: Trend;
     cigarettes: number;
-    grap?: GrapStage;
+    dayMeanPm25: number;
+    day: number[]; // ambient PM2.5 for local hours 0–23
+    nowHour: number;
+    grap: GrapStage | null;
+    source: AirSource;
   };
-  tier: Tier;
+  tierGeneral: Tier; // for everyone
+  tierSensitive: Tier; // for the most sensitive person in the household
   sensitive: SensitiveGroup[];
   windows: { clean: Window | null; worst: Window | null; meaningful: boolean };
   routine: RoutineStep[]; // { hour, title, detail, ruleId, impact? }
   alerts: Alert[]; // { level: 'danger' | 'warning' | 'info', title, detail, ruleId }
   indoor: { ratio: number; homePm25: number; hacks: Hack[]; purifier: PurifierVerdict };
-  swaps: Swap[]; // { id, title, co2KgWeek, pm25GWeek, doseDeltaPct, tradeOff?, ruleId }
+  swaps: Swap[]; // { id, ruleId, title, detail, co2KgWeek | null, pm25GWeek, doseDeltaPct, tradeOff | null, choice }
   exposure: { usual: Dose; withPlan: Dose; reductionPct: number }; // Dose = { totalUg, volumeM3, byPlace, cigarettes }
   community: CommunityAction[];
+  choices: Choices; // the what-if choices this plan applied
 };
 ```
 

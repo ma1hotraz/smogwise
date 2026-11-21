@@ -7,17 +7,20 @@ import { expect, type Page, test } from '@playwright/test';
 
 import { localHourKey } from '../../src/shared/time.js';
 
-// Dates in the fixture's own timezone, so the hours are "today" whatever the runner's clock says.
+// The browser clock is pinned to 09:00 in Delhi, so the plan (which depends on the hour) is the
+// same whenever the suite runs; fixture dates are derived from that instant.
 const TIMEZONE = 'Asia/Kolkata';
-const today = localHourKey(new Date(), TIMEZONE).slice(0, 10);
-const tomorrow = localHourKey(new Date(Date.now() + 86_400_000), TIMEZONE).slice(0, 10);
+const FIXED_NOW = new Date('2026-11-20T03:30:00Z');
+const DAY_MS = 86_400_000;
+const today = localHourKey(FIXED_NOW, TIMEZONE).slice(0, 10);
+const tomorrow = localHourKey(new Date(FIXED_NOW.getTime() + DAY_MS), TIMEZONE).slice(0, 10);
 const SHAPE = [
   170, 175, 178, 180, 180, 178, 175, 171, 160, 140, 120, 105, 95, 88, 86, 90, 110, 130, 150, 160,
   165, 168, 170, 170,
 ];
 const AIR = {
   source: 'open-meteo',
-  fetchedAt: new Date().toISOString(),
+  fetchedAt: FIXED_NOW.toISOString(),
   timezone: TIMEZONE,
   hourly: [today, tomorrow].flatMap((day) =>
     SHAPE.map((pm25, h) => ({
@@ -48,6 +51,7 @@ async function setup(page: Page): Promise<string[]> {
     }
   });
   page.on('pageerror', (error) => problems.push(error.message));
+  await page.clock.setFixedTime(FIXED_NOW);
   await page.route('**/api/air?**', (route) => route.fulfill({ json: AIR }));
   await page.route('**/api/geocode?**', (route) => route.fulfill({ json: PLACES }));
   return problems;

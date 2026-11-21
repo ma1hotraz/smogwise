@@ -3,8 +3,8 @@ import { act, renderHook } from '@testing-library/preact';
 import { describe, expect, it, vi } from 'vitest';
 
 import { checkProfile } from '../../src/client/features/intake/IntakeForm.js';
-import { nextActive } from '../../src/client/features/intake/LocationField.js';
 import { placeFromPosition } from '../../src/client/features/intake/useMyLocation.js';
+import { nextActive } from '../../src/client/features/intake/usePlaceCombobox.js';
 import { parseReading } from '../../src/client/features/plan/AirHeader.js';
 import { useNow } from '../../src/client/lib/useNow.js';
 import { sample } from '../helpers/fixtures.js';

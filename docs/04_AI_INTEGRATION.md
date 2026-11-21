@@ -71,7 +71,7 @@ Built by `src/shared/ai/context.ts`, validated by the `AiContext` strict schema 
 
 ```ts
 Brief = { headline: string(≤ 90), summary: string(≤ 600) }
-Answer = { answer: string(≤ 1200), citedRuleIds: string[](≤ 6, /^[A-Z]{1,2}\d{2}$/), followUps: string[](≤ 3, each ≤ 90) }
+Answer = { answer: string(≤ 1200), citedRuleIds: string[](≤ 6, /^(?:A|L|H|E|R|S|C|AL)\d{2}$/), followUps: string[](≤ 3, each ≤ 90) }
 ```
 
 Post-validation: cited ids are filtered to ids present in the context; control characters are
@@ -95,13 +95,13 @@ stripped; answers are rendered as text (never HTML).
 
 Intent matcher over keywords (EN + Hindi transliteration): exercise/run/walk/yoga, school/child/
 play, mask, purifier/filter, window/ventilate/air out, commute/metro/bike, heater/angithi/coal,
-cooking/kitchen, pregnant, elderly, outside/go out, general. Each intent composes an answer from
+and a general answer for anything else. Each intent composes an answer from
 the plan (times, tier, window, impact numbers) and cites the relevant rule ids. It is also used
 by the client when the server is unreachable, so Ask Smogwise always answers.
 
 ## 8. Implementations
 
-`AiService` has two implementations, chosen once in `src/server/app.ts`: `rulesService` (no API
+`AiService` has two implementations, chosen once in the composition root `src/server/bootstrap.ts`: `rulesService` (no API
 key) and `createGeminiService` (Gemini, with caches). Every model call goes through one guarded
 pipeline in `src/server/ai/service.ts`: model → zod → number check → accept, otherwise the rules
 answer from `src/shared/ai/rules.ts`, which the browser also uses when the server is unreachable.

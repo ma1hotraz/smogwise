@@ -1,6 +1,6 @@
 /** I — indoor mass-balance model and purifier sizing (docs/03). */
+import { round } from '../math.js';
 import { INDOOR_SOURCES, type Lifestyle } from '../schema/profile.js';
-import { round } from '../time.js';
 import {
   AIR_EXCHANGE,
   COOKING_DELTA,
@@ -64,6 +64,9 @@ export function indoorPm(outdoor: number, state: HomeState): number {
   return (infiltration + sources) / removalRate(state);
 }
 
+/** Below this share of the required CADR a purifier is called undersized. */
+const UNDERSIZED_COVERAGE = 0.6;
+
 /** Purifier verdict against 5 air changes per hour (≈ AHAM "2/3 rule"). */
 export function purifierVerdict(roomM2: number, cadr: number): PurifierVerdict {
   const requiredCadr = Math.round(roomM2 * INDOOR.ceilingM * INDOOR.targetAch);
@@ -71,7 +74,7 @@ export function purifierVerdict(roomM2: number, cadr: number): PurifierVerdict {
   if (cadr === 0) {
     return { status: 'none', requiredCadr, coverage: 0 };
   }
-  if (coverage < 0.6) {
+  if (coverage < UNDERSIZED_COVERAGE) {
     return { status: 'undersized', requiredCadr, coverage };
   }
   return { status: coverage < 1 ? 'adequate' : 'good', requiredCadr, coverage };

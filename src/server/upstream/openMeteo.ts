@@ -6,9 +6,9 @@
 import * as z from 'zod/mini';
 
 import { MAX_PM25 } from '../../shared/limits.js';
+import { round } from '../../shared/math.js';
 import { type AirData, type HourlyPoint, MAX_HOURS } from '../../shared/schema/air.js';
 import { Location } from '../../shared/schema/profile.js';
-import { round } from '../../shared/time.js';
 
 export type FetchFn = (input: URL, init: RequestInit) => Promise<Response>;
 
@@ -16,6 +16,10 @@ const GEOCODE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 const AIR_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 const MAX_BYTES = 512 * 1024;
 const MAX_RESULTS = 5;
+/** Candidates requested from the geocoder; extra ones cover results dropped by validation. */
+const GEOCODE_CANDIDATES = 10;
+/** Today and tomorrow, so the plan can look ahead past midnight. */
+const FORECAST_DAYS = 2;
 
 /** Any upstream failure; routes map it to a generic 502. */
 export class UpstreamError extends Error {
@@ -65,7 +69,7 @@ async function getJson(fetchFn: FetchFn, url: URL, timeoutMs: number): Promise<u
     throw new UpstreamError('too_large');
   }
   const text = await response.text();
-  if (text.length > MAX_BYTES) {
+  if (Buffer.byteLength(text, 'utf8') > MAX_BYTES) {
     throw new UpstreamError('too_large');
   }
   try {
@@ -116,7 +120,12 @@ function urlFor(base: string, params: Record<string, string>): URL {
 }
 
 async function geocode(fetchFn: FetchFn, timeoutMs: number, query: string): Promise<Location[]> {
-  const url = urlFor(GEOCODE_URL, { name: query, count: '10', language: 'en', format: 'json' });
+  const url = urlFor(GEOCODE_URL, {
+    name: query,
+    count: String(GEOCODE_CANDIDATES),
+    language: 'en',
+    format: 'json',
+  });
   const body = GeocodeBody.safeParse(await getJson(fetchFn, url, timeoutMs));
   if (!body.success) {
     throw new UpstreamError('schema');
@@ -139,7 +148,7 @@ async function airQuality(
     longitude: String(lon),
     hourly: 'pm2_5,pm10',
     timezone: 'auto',
-    forecast_days: '2',
+    forecast_days: String(FORECAST_DAYS),
   });
   const body = AirBody.safeParse(await getJson(fetchFn, url, timeoutMs));
   if (!body.success) {

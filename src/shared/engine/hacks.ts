@@ -1,4 +1,5 @@
 /** H01–H11 — indoor air hacks ranked by modelled reduction (docs/03). */
+import { reductionPct } from '../math.js';
 import { INDOOR_SOURCES, type IndoorSource, type Lifestyle } from '../schema/profile.js';
 import { INDOOR } from './data/factors.js';
 import { homeState, indoorPm, purifierVerdict } from './indoor.js';
@@ -133,7 +134,7 @@ export function indoorHacks(lifestyle: Lifestyle, outdoorMean: number): Hack[] {
   const before = indoorPm(outdoorMean, homeState(lifestyle));
   const measured = [...purifierHacks(lifestyle), ...otherHacks(lifestyle)].map((hack) => {
     const after = indoorPm(outdoorMean, homeState(lifestyle, choicesFor(hack.choice)));
-    return { ...hack, reductionPct: Math.round((1 - after / Math.max(before, 1e-9)) * 100) };
+    return { ...hack, reductionPct: reductionPct(before, after) };
   });
   // Only recommend what helps here: sealing a home can trap indoor smoke when outdoor air is clean.
   const helpful = measured.filter((hack) => hack.reductionPct > 0);

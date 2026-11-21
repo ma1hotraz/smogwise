@@ -4,18 +4,18 @@
  */
 import * as z from 'zod/mini';
 
+import { AIR_FRESH_MS } from '../../shared/limits.js';
 import { AirData } from '../../shared/schema/air.js';
 import { Profile } from '../../shared/schema/profile.js';
 
 const PROFILE_ITEM = 'smogwise.profile.v1';
 const PREFS_ITEM = 'smogwise.prefs.v1';
 const AIR_ITEM_PREFIX = 'smogwise.air.';
-const AIR_MAX_AGE_MS = 30 * 60_000;
 
-export const Prefs = z.strictObject({
-  theme: z.enum(['system', 'light', 'dark']),
-  textSize: z.enum(['100', '115', '130']),
-});
+export const THEMES = ['system', 'light', 'dark'] as const;
+export const TEXT_SIZES = ['100', '115', '130'] as const;
+
+export const Prefs = z.strictObject({ theme: z.enum(THEMES), textSize: z.enum(TEXT_SIZES) });
 export type Prefs = z.infer<typeof Prefs>;
 const DEFAULT_PREFS: Prefs = { theme: 'system', textSize: '100' };
 
@@ -63,7 +63,7 @@ const airKey = (lat: number, lon: number): string => `${AIR_ITEM_PREFIX}${lat},$
 /** Live air data cached for this tab for 30 minutes per 0.1° cell. */
 export function loadCachedAir(lat: number, lon: number, now: number): AirData | null {
   const parsed = CachedAir.safeParse(read(sessionStorage, airKey(lat, lon)));
-  return parsed.success && now - parsed.data.savedAt < AIR_MAX_AGE_MS ? parsed.data.air : null;
+  return parsed.success && now - parsed.data.savedAt < AIR_FRESH_MS ? parsed.data.air : null;
 }
 
 export function saveCachedAir(lat: number, lon: number, air: AirData, now: number): void {

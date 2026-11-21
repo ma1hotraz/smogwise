@@ -1,6 +1,5 @@
 /** One polite live region for status messages (WCAG 4.1.3), shared through context. */
-import type { ComponentChildren } from 'preact';
-import { createContext } from 'preact';
+import { type ComponentChildren, createContext } from 'preact';
 import { useCallback, useContext, useState } from 'preact/hooks';
 
 type Announce = (message: string) => void;

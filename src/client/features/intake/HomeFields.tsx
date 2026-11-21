@@ -1,5 +1,5 @@
 /** The "Your home" fieldset: fuels, heating, room and indoor habits (docs/01 F1). */
-import { MAX_CADR } from '../../../shared/limits.js';
+import { MAX_CADR, ROOM_M2 } from '../../../shared/limits.js';
 import {
   COOKING_FUELS,
   HEATING_TYPES,
@@ -101,8 +101,8 @@ function RoomFields({ value, onChange }: LifestyleProps) {
         unit="m²"
         hint="A 4 × 4 m room is 16 m²."
         value={value.home.roomM2}
-        min={6}
-        max={100}
+        min={ROOM_M2.min}
+        max={ROOM_M2.max}
         onChange={(roomM2) => {
           setHome({ roomM2 });
         }}

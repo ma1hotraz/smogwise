@@ -2,14 +2,15 @@
  * buildPlan — the single entry point of the decision engine. Pure: the same profile, air data,
  * instant and choices always give the same plan (docs/03).
  */
+import { mean, reductionPct, round } from '../math.js';
 import type { AirData } from '../schema/air.js';
 import type { Lifestyle, Profile } from '../schema/profile.js';
-import { hourOf, localHourKey, mean, round } from '../time.js';
+import { hourOf, localHourKey } from '../time.js';
 import { buildAlerts } from './alerts.js';
 import { bandFor, cigarettesFor, indexFor, scaleFor } from './aqi.js';
 import { applyChoices, commutes, recommendedChoices } from './choices.js';
 import { communityActions } from './community.js';
-import { doseFor, percentChange } from './exposure.js';
+import { doseFor } from './exposure.js';
 import { indoorHacks } from './hacks.js';
 import { homeState, indoorPm, indoorRatio, purifierVerdict } from './indoor.js';
 import { grapStage } from './location.js';
@@ -75,7 +76,7 @@ function exposure(
     n95: choices.n95 === true,
     commuting: commutes(applied, choices.wfhDays),
   });
-  return { usual, withPlan, reductionPct: -percentChange(usual.totalUg, withPlan.totalUg) };
+  return { usual, withPlan, reductionPct: reductionPct(usual.totalUg, withPlan.totalUg) };
 }
 
 /** Builds the full plan; `choices` override the engine's default recommendations. */

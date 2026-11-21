@@ -1,8 +1,8 @@
 /** C01–C03 — community actions and scaled impact (docs/03). */
+import { round } from '../math.js';
 import type { Household, Lifestyle } from '../schema/profile.js';
-import { round } from '../time.js';
 import { COMMUNITY_COPY, fill } from './data/copy.js';
-import { CAR_MODES, TREE_KG_CO2_YEAR, WEEKS_PER_MONTH } from './data/factors.js';
+import { CAR_MODES, MONTHS_PER_YEAR, TREE_KG_CO2_YEAR, WEEKS_PER_MONTH } from './data/factors.js';
 import { TIER } from './data/scales.js';
 import { reportingChannel } from './location.js';
 import type { CommunityAction, Swap, Tier } from './types.js';
@@ -61,7 +61,7 @@ export function scaleImpact(swaps: readonly Swap[], households: number): Communi
   return {
     co2KgMonth: Math.round(co2),
     pm25GMonth: Math.round(pm25),
-    treeYears: Math.round((co2 * 12) / TREE_KG_CO2_YEAR),
+    treeYears: Math.round((co2 * MONTHS_PER_YEAR) / TREE_KG_CO2_YEAR),
   };
 }
 

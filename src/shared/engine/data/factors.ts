@@ -175,6 +175,7 @@ export const COOKING_WEEK = {
 /** 2 kg/week of burnt waste × 9.8 g PM2.5/kg (Wiedinmyer et al. 2014). */
 export const WASTE_BURNING_PM25_G_WEEK = 20;
 
-/** Weeks per month for community scaling, and kg CO₂ one tree takes up per year (approx.). */
+/** Calendar units for community scaling, and kg CO₂ one tree takes up per year (approx.). */
 export const WEEKS_PER_MONTH = 4.35;
+export const MONTHS_PER_YEAR = 12;
 export const TREE_KG_CO2_YEAR = 21;

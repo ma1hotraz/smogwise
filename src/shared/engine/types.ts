@@ -1,16 +1,17 @@
 /** Output types of the decision engine (docs/02 §4, docs/03). */
+import type { GRAP_STAGES, SCALES, SENSITIVE_GROUPS, TRENDS } from '../schema/ai.js';
 import type { AirSource } from '../schema/air.js';
 import type { CommuteMode, CookingFuel, Heating, IndoorSource } from '../schema/profile.js';
 
-export type Scale = 'NAQI' | 'US_AQI';
+export type Scale = (typeof SCALES)[number];
 /** 0 = cleanest band … 5 = worst band of the active scale. */
 export type Level = 0 | 1 | 2 | 3 | 4 | 5;
 /** Health-based personal tier (docs/03 A03). */
 export type Tier = 0 | 1 | 2 | 3 | 4 | 5;
-export type Trend = 'rising' | 'falling' | 'steady';
-export type GrapStage = 'I' | 'II' | 'III' | 'IV';
+export type Trend = (typeof TRENDS)[number];
+export type GrapStage = (typeof GRAP_STAGES)[number];
 
-export type SensitiveGroup = 'under5' | 'over65' | 'pregnant' | 'respiratory' | 'heart';
+export type SensitiveGroup = (typeof SENSITIVE_GROUPS)[number];
 
 export interface Band {
   level: Level;

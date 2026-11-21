@@ -69,10 +69,12 @@ export function sanitiseQuestion(question: string): string {
 /** Numbers any answer may use without them appearing in the context (N95, PM2.5, emergency lines…). */
 const ALWAYS_ALLOWED = new Set(['95', '2.5', '10', '70', '112', '1122', '120', '24', '30', '60']);
 const SMALL_COUNT = 12;
+/** Clock times such as 18:00 or 7:30; the prompt allows them, so they are not checked as figures. */
+const CLOCK_TIME = /\b\d{1,2}:\d{2}\b/g;
 
 /** Numbers in `text` that appear nowhere in the context — a sign of a hallucinated figure. */
 export function unknownNumbers(text: string, context: AiContext): string[] {
   const known = new Set(JSON.stringify(context).match(/\d+(?:\.\d+)?/g) ?? []);
-  const found = text.match(/\d+(?:\.\d+)?/g) ?? [];
+  const found = text.replace(CLOCK_TIME, ' ').match(/\d+(?:\.\d+)?/g) ?? [];
   return found.filter((n) => !known.has(n) && !ALWAYS_ALLOWED.has(n) && Number(n) > SMALL_COUNT);
 }

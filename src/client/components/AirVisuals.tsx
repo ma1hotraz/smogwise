@@ -156,10 +156,10 @@ function StripTable({
 export function HourStrip({ day, scale, nowHour, clean }: HourStripProps) {
   const [table, setTable] = useState(false);
   const cleanToday = clean && clean.startHour >= nowHour ? clean : null;
-  const window = cleanToday
+  const windowText = cleanToday
     ? ` Cleanest ${formatWindow(cleanToday.startHour, cleanToday.hours, ' to ')}.`
     : '';
-  const summary = `PM2.5 today ranges from ${Math.min(...day)} to ${Math.max(...day)} µg/m³.${window}`;
+  const summary = `PM2.5 today ranges from ${Math.min(...day)} to ${Math.max(...day)} µg/m³.${windowText}`;
   return (
     <figure class="strip" aria-labelledby="strip-caption">
       <StripChart day={day} scale={scale} nowHour={nowHour} clean={cleanToday} summary={summary} />

@@ -7,6 +7,7 @@ import { swapIsOn } from '../../../shared/engine/whatIf.js';
 import type { Location } from '../../../shared/schema/profile.js';
 import { NumberField } from '../../components/Fields.js';
 import { formatInt } from '../../lib/labels.js';
+import { printPage } from '../../lib/print.js';
 
 interface CommunityPanelProps {
   plan: Plan;
@@ -84,7 +85,7 @@ export function CommunityPanel({ plan, location }: CommunityPanelProps) {
         class="button no-print"
         type="button"
         onClick={() => {
-          window.print();
+          printPage();
         }}
       >
         Print a notice for your noticeboard

@@ -185,9 +185,10 @@ al. 2017 (commuter exposure review). Ratios and factors are rounded to two signi
 |      | tierSensitive 2                                                                        | Move to the clean window; lighter intensity if sensitive                   |
 |      | tierSensitive ≥ 3                                                                      | Indoors at the usual hour (impact: dose saved vs. outdoors)                |
 | R04  | Commute in an exposed mode (walk, cycle, two-wheeler, auto, bus) and tierSensitive ≥ 3 | Depart hour: wear a well-fitted N95; tier ≥ 4: take the metro if available |
+|      | Exposed mode and tierSensitive < 3                                                     | Commute as usual, on quieter streets                                       |
 |      | Car                                                                                    | Recirculation on, windows up                                               |
 | R05  | Children and tierSensitive ≥ 3                                                         | 16:00 Indoor play; no outdoor sport                                        |
-| R06  | Every day                                                                              | Cooking hour (08:00 and 19:00): exhaust on, lids on; biomass → see S04     |
+| R06  | Every day                                                                              | Cooking hour (08:00 and 19:00): exhaust on, lids on; biomass → see S07     |
 | R07  | Heating is brazier / wood / kerosene                                                   | 20:00 Safe heating (see AL01)                                              |
 | R08  | Purifier                                                                               | 22:00 Purifier on high, bedroom door shut, 30 min before sleep             |
 |      | No purifier                                                                            | 22:00 Shut the bedroom door; damp-dust surfaces                            |
@@ -199,17 +200,17 @@ Weekly commute distance = `2 × km × daysPerWeek`. For each feasible alternativ
 `co2KgWeek = (EF_now − EF_alt) × weeklyKm`, `pm25GWeek` likewise, `doseDeltaPct` = change in
 total commute-day dose. Positive numbers are savings; a dose increase is shown as a trade-off.
 
-| Rule | Alternative                                      | Feasible when                            |
-| ---- | ------------------------------------------------ | ---------------------------------------- |
-| S01  | Walk                                             | km ≤ 2                                   |
-| S02  | Cycle                                            | km ≤ 8 (trade-off note on tier ≥ 3 days) |
-| S03  | Metro / bus                                      | Mode is not already metro/bus/walk/cycle |
-| S04  | Carpool (2 people)                               | Car                                      |
-| S05  | EV (long-term)                                   | Petrol / diesel / CNG car                |
-| S06  | Work from home 2 days/week                       | Commute days ≥ 3, mode ≠ WFH             |
-| S07  | LPG/PNG or induction instead of biomass/kerosene | Cooking = biomass                        |
-| S08  | Electric heating + draught-proofing              | Heating = brazier / wood / kerosene      |
-| S09  | Compost instead of burning                       | Burns waste or leaves                    |
+| Rule | Alternative                                      | Feasible when                             |
+| ---- | ------------------------------------------------ | ----------------------------------------- |
+| S01  | Walk                                             | km ≤ 2                                    |
+| S02  | Cycle                                            | km ≤ 8 (trade-off note if the dose rises) |
+| S03  | Metro / bus                                      | Mode is not already metro/bus/walk/cycle  |
+| S04  | Carpool (2 people)                               | Car                                       |
+| S05  | EV (long-term)                                   | Petrol / diesel / CNG car                 |
+| S06  | Work from home 2 days/week                       | Commute days ≥ 3, mode ≠ WFH              |
+| S07  | LPG/PNG or induction instead of biomass/kerosene | Cooking = biomass                         |
+| S08  | Electric heating + draught-proofing              | Heating = brazier / wood / kerosene       |
+| S09  | Compost instead of burning                       | Burns waste or leaves                     |
 
 Household fuel figures (per week, 3 h of heating per evening, 2 kg of garden/household waste):
 
@@ -245,6 +246,6 @@ Household fuel figures (per week, 3 h of heating per evening, 2 kg of garden/hou
 ## Choices (what-if) and the default plan
 
 `buildPlan(profile, air, now, choices?)`. Without explicit choices the engine applies its own
-recommendations (N95 per R04, exercise per R03, remove indoor sources per H04–H08, purifier
+recommendations (N95 per R04, exercise per R03, remove indoor sources per H04–H08, kitchen exhaust per H09 when cooking on gas, purifier
 unchanged). The _Your usual day_ dose uses the profile as-is; _Smogwise day_ uses the choices. The
 user toggles any swap or hack; the plan recomputes synchronously (< 2 ms).

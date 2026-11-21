@@ -2,7 +2,7 @@
 import * as z from 'zod/mini';
 
 import { MAX_PM25 } from '../limits.js';
-import { round } from '../time.js';
+import { round } from '../math.js';
 import { Location } from './profile.js';
 
 /** Hours of forecast kept after trimming the upstream response. */

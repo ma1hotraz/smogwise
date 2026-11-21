@@ -99,13 +99,16 @@ tests/        unit, property, api, components, e2e
   lines (components ≤ 60), files ≤ 250 lines; layer boundaries and engine purity (`Date.now`, `Math.random`, `fetch`
   banned in the engine) are **lint-enforced** ([`eslint.config.js`](eslint.config.js)).
 - No `console` statements anywhere (lint-enforced repo-wide); no code or style file over 300 lines.
-- Single responsibility in the UI: components only render; data, state and announcements live
-  in view-model hooks (`usePlanModel`, `useBrief`, `useAsk`, `useReadAloud`, `useAir`).
+- Single responsibility in the UI: components hold only UI state; the profile, plan data, AI
+  calls and announcements live in view-model hooks (`useAppModel`, `usePlanModel`, `useBrief`,
+  `useAsk`, `useReadAloud`, `useAir`), and display text is built in `lib/labels.ts`.
 - No dead code (knip) and **zero duplicated blocks** (jscpd), both enforced in CI; colour tokens
   are defined once for both themes with CSS `light-dark()`.
 - Dependency injection on the server for fetch, the AI client, clock and logger (the assistant is
-  chosen once in the composition root, `src/server/bootstrap.ts`); copy kept apart from logic
-  ([`src/shared/engine/data/copy.ts`](src/shared/engine/data/copy.ts)); every constant cites its source.
+  chosen once in the composition root, `src/server/bootstrap.ts`); alert, routine and community
+  copy lives in [`src/shared/engine/data/copy.ts`](src/shared/engine/data/copy.ts); domain
+  constants cite their sources and limits shared by schemas and forms live in
+  [`src/shared/limits.ts`](src/shared/limits.ts).
 - CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint, dead code (knip), duplication (jscpd, zero clones), format, typecheck, tests with
   coverage gates, build, bundle budgets, `npm audit`, Playwright and gitleaks. Pre-commit hook in `.githooks/`.
 
@@ -127,8 +130,8 @@ tests/        unit, property, api, components, e2e
 
 | Metric                      | Budget  | Measured             |
 | --------------------------- | ------- | -------------------- |
-| Initial JS (gzip)           | ≤ 35 kB | **26.5 kB**          |
-| Total JS, all chunks (gzip) | ≤ 60 kB | **44.1 kB**          |
+| Initial JS (gzip)           | ≤ 35 kB | **27.1 kB**          |
+| Total JS, all chunks (gzip) | ≤ 60 kB | **44.5 kB**          |
 | CSS (gzip)                  | ≤ 8 kB  | **2.8 kB**           |
 | Web fonts                   | 0       | **0** (system fonts) |
 | `buildPlan`                 | < 2 ms  | median of 1,000 runs |
@@ -146,7 +149,7 @@ npm test          # Vitest with coverage gates (fails below them)
 npm run test:e2e  # Playwright on the production build, no API key, upstream routed to fixtures
 ```
 
-**359** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
+**360** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
 Coverage: **100 % statements · 100 % functions · 100 % lines · 97.0 % branches**; the decision
 engine is at 100 % on every measure, branches included. Property tests (fast-check, 500 runs each) prove: the index is monotonic; a
 purifier, an N95 or removing an indoor source never increases dose; the clean window is never

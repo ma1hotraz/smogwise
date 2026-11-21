@@ -3,9 +3,11 @@
  * coordinates, names or exact household composition.
  */
 import type { Plan, Window } from '../engine/types.js';
+import { MAX_ALERTS } from '../limits.js';
+import { round } from '../math.js';
 import type { AiContext } from '../schema/ai.js';
 import type { Profile } from '../schema/profile.js';
-import { formatHour, round } from '../time.js';
+import { formatHour } from '../time.js';
 
 const MAX_STEPS = 6;
 const MAX_EXTRAS = 2;
@@ -46,7 +48,7 @@ export function buildContext(plan: Plan, profile: Profile): AiContext {
     sensitive: plan.sensitive,
     cleanWindow: windowSummary(plan.windows.clean),
     worstWindow: windowSummary(plan.windows.worst),
-    alerts: plan.alerts.slice(0, 6).map((a) => ({ id: a.ruleId, title: a.title })),
+    alerts: plan.alerts.slice(0, MAX_ALERTS).map((a) => ({ id: a.ruleId, title: a.title })),
     actions: topActions(plan),
     dose: {
       usualUg: usual.totalUg,

@@ -1,6 +1,6 @@
 /** E — inhaled dose over a typical day, by micro-environment (docs/03). */
+import { round } from '../math.js';
 import type { Lifestyle } from '../schema/profile.js';
-import { round } from '../time.js';
 import { cigarettesFor } from './aqi.js';
 import { DAY, MODES, N95_FACTOR, RATE } from './data/factors.js';
 import { type HomeState, indoorPm } from './indoor.js';
@@ -117,9 +117,4 @@ export function doseFor(input: DoseInput): Dose {
     byPlace,
     cigarettes: cigarettesFor(totalUg / volume),
   };
-}
-
-/** Percentage change from `before` to `after` (negative = reduction). */
-export function percentChange(before: number, after: number): number {
-  return before === 0 ? 0 : Math.round(((after - before) / before) * 100);
 }

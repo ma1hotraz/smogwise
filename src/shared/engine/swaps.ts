@@ -1,6 +1,6 @@
 /** S01–S09 — sustainable alternatives with CO₂, PM2.5 and personal-dose impact (docs/03). */
+import { percentChange, round } from '../math.js';
 import type { CommuteMode, Lifestyle } from '../schema/profile.js';
-import { round } from '../time.js';
 import { commutes } from './choices.js';
 import {
   burnsFuelIndoors,
@@ -10,7 +10,7 @@ import {
   MODES,
   WASTE_BURNING_PM25_G_WEEK,
 } from './data/factors.js';
-import { doseFor, percentChange } from './exposure.js';
+import { doseFor } from './exposure.js';
 import { homeState } from './indoor.js';
 import type { Choices, RuleId, Swap } from './types.js';
 
@@ -20,6 +20,15 @@ interface SwapContext {
   countryCode: string;
 }
 
+/** Longest trip suggested on foot and by bicycle, in km. */
+const WALK_MAX_KM = 2;
+const CYCLE_MAX_KM = 8;
+/** S06 is offered from this many commute days a week, and suggests this many home days. */
+const WFH_MIN_DAYS = 3;
+const WFH_DAYS = 2;
+/** Each commute day is a trip there and back. */
+const LEGS_PER_DAY = 2;
+
 const ALTERNATIVES: {
   mode: CommuteMode;
   ruleId: RuleId;
@@ -27,8 +36,20 @@ const ALTERNATIVES: {
   skip: readonly CommuteMode[];
   maxKm: number;
 }[] = [
-  { mode: 'walk', ruleId: 'S01', title: 'Walk this trip', skip: ['walk', 'cycle'], maxKm: 2 },
-  { mode: 'cycle', ruleId: 'S02', title: 'Cycle instead', skip: ['walk', 'cycle'], maxKm: 8 },
+  {
+    mode: 'walk',
+    ruleId: 'S01',
+    title: 'Walk this trip',
+    skip: ['walk', 'cycle'],
+    maxKm: WALK_MAX_KM,
+  },
+  {
+    mode: 'cycle',
+    ruleId: 'S02',
+    title: 'Cycle instead',
+    skip: ['walk', 'cycle'],
+    maxKm: CYCLE_MAX_KM,
+  },
   {
     mode: 'metro',
     ruleId: 'S03',
@@ -114,8 +135,8 @@ function sharedTripSwaps(ctx: SwapContext, base: number): Swap[] {
       choice: { kind: 'carpool' },
     });
   }
-  if (commute.daysPerWeek >= 3) {
-    const km = 2 * commute.km * 2;
+  if (commute.daysPerWeek >= WFH_MIN_DAYS) {
+    const km = WFH_DAYS * LEGS_PER_DAY * commute.km;
     swaps.push({
       id: 'wfh',
       ruleId: 'S06',
@@ -125,7 +146,7 @@ function sharedTripSwaps(ctx: SwapContext, base: number): Swap[] {
       pm25GWeek: round(now.pm25 * km, 1),
       doseDeltaPct: percentChange(base, dayDose(ctx, ctx.lifestyle, {}, false)),
       tradeOff: null,
-      choice: { kind: 'wfhDays', days: 2 },
+      choice: { kind: 'wfhDays', days: WFH_DAYS },
     });
   }
   return swaps;

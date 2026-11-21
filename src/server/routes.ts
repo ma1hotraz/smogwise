@@ -2,6 +2,7 @@
 import { type RequestHandler, type Response, Router } from 'express';
 import type * as z from 'zod/mini';
 
+import { AIR_FRESH_MS } from '../shared/limits.js';
 import { AskRequest, BriefRequest } from '../shared/schema/ai.js';
 import { type AirData, AirQuery, GeocodeQuery, roundCoord } from '../shared/schema/air.js';
 import type { Location } from '../shared/schema/profile.js';
@@ -12,7 +13,6 @@ import { sendError } from './httpErrors.js';
 import type { Logger } from './logger.js';
 import { type OpenMeteo, UpstreamError } from './upstream/openMeteo.js';
 
-const AIR_TTL_MS = 30 * 60_000;
 const GEOCODE_TTL_MS = 24 * 60 * 60_000;
 /** Version of the HTTP API contract (docs/02 §5), reported by /api/health. */
 const API_VERSION = '1.0.0';
@@ -62,7 +62,7 @@ async function upstreamOr502<T>(
 /** GET /geocode and /air: validated, cached, rate-limited upstream proxies. */
 function dataRoutes(router: Router, deps: DataRouteDeps): void {
   const now = (): number => deps.clock.now().getTime();
-  const air = new TtlCache<AirData>(deps.maxEntries, AIR_TTL_MS, now);
+  const air = new TtlCache<AirData>(deps.maxEntries, AIR_FRESH_MS, now);
   const places = new TtlCache<Location[]>(deps.maxEntries, GEOCODE_TTL_MS, now);
 
   router.get('/geocode', deps.dataLimit, async (req, res) => {

@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { doseFor, percentChange, schedule } from '../../../src/shared/engine/exposure.js';
+import { doseFor, schedule } from '../../../src/shared/engine/exposure.js';
 import {
   homeState,
   indoorPm,
   indoorRatio,
   purifierVerdict,
 } from '../../../src/shared/engine/indoor.js';
+import { percentChange, reductionPct } from '../../../src/shared/math.js';
 import { baseProfile } from '../../helpers/fixtures.js';
 
 const flat = (v: number): number[] => Array.from({ length: 24 }, () => v);
@@ -178,5 +179,7 @@ describe('E exposure', () => {
   it('computes signed percentage change', () => {
     expect(percentChange(200, 150)).toBe(-25);
     expect(percentChange(0, 10)).toBe(0);
+    expect(reductionPct(200, 150)).toBe(25);
+    expect(reductionPct(0, 10)).toBe(0);
   });
 });

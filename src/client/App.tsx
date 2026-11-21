@@ -1,29 +1,28 @@
 /** App shell: skip link, masthead with preferences, intake or plan, footer. */
-import { useState } from 'preact/hooks';
-
-import type { Profile } from '../shared/schema/profile.js';
 import { SelectField } from './components/Fields.js';
 import { IntakeForm } from './features/intake/IntakeForm.js';
-import { useAnnounce } from './lib/announcer.js';
 import { lazyComponent } from './lib/lazy.js';
 import { usePrefs } from './lib/prefs.js';
-import { forgetEverything, loadProfile, type Prefs, saveProfile } from './lib/storage.js';
+import { type Prefs, TEXT_SIZES, THEMES } from './lib/storage.js';
+import { useAppModel } from './useAppModel.js';
 
 /** The plan view carries the decision engine; it is a separate chunk prefetched from main.tsx. */
 export const loadPlanView = () => import('./features/plan/PlanView.js').then((m) => m.PlanView);
 const PlanView = lazyComponent(loadPlanView);
 
-const THEME_OPTIONS = [
-  { value: 'system', label: 'Match device' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-] as const;
+const THEME_LABELS: Record<Prefs['theme'], string> = {
+  system: 'Match device',
+  light: 'Light',
+  dark: 'Dark',
+};
+const THEME_OPTIONS = THEMES.map((value) => ({ value, label: THEME_LABELS[value] }));
 
-const TEXT_SIZE_OPTIONS = [
-  { value: '100', label: 'Standard' },
-  { value: '115', label: 'Large' },
-  { value: '130', label: 'Larger' },
-] as const;
+const TEXT_SIZE_LABELS: Record<Prefs['textSize'], string> = {
+  '100': 'Standard',
+  '115': 'Large',
+  '130': 'Larger',
+};
+const TEXT_SIZE_OPTIONS = TEXT_SIZES.map((value) => ({ value, label: TEXT_SIZE_LABELS[value] }));
 
 /** Brand and display preferences (theme, text size). */
 function Masthead({ prefs, onPrefs }: { prefs: Prefs; onPrefs: (next: Prefs) => void }) {
@@ -56,6 +55,7 @@ function Masthead({ prefs, onPrefs }: { prefs: Prefs; onPrefs: (next: Prefs) => 
   );
 }
 
+/** Data sources and the privacy promise. */
 function Footer() {
   return (
     <footer class="footer">
@@ -69,22 +69,8 @@ function Footer() {
 }
 
 export function App() {
-  const [profile, setProfile] = useState<Profile | null>(loadProfile);
-  const [editing, setEditing] = useState(false);
   const [prefs, setPrefs] = usePrefs();
-  const announce = useAnnounce();
-  // After navigation, the new view focuses its heading so keyboard and screen-reader users land in context.
-  const [moved, setMoved] = useState(false);
-  const view = profile && !editing ? 'plan' : 'intake';
-
-  const submit = (next: Profile): void => {
-    saveProfile(next);
-    setProfile(next);
-    setEditing(false);
-    setMoved(true);
-    announce(`Your plan for ${next.location.name} is ready.`);
-  };
-
+  const { profile, view, moved, submit, edit, forget } = useAppModel();
   return (
     <div class="shell">
       <a class="skip-link" href="#main">
@@ -93,20 +79,7 @@ export function App() {
       <Masthead prefs={prefs} onPrefs={setPrefs} />
       <main id="main" tabIndex={-1}>
         {view === 'plan' && profile ? (
-          <PlanView
-            profile={profile}
-            focusHeading={moved}
-            onEdit={() => {
-              setEditing(true);
-              setMoved(true);
-            }}
-            onForget={() => {
-              forgetEverything();
-              setProfile(null);
-              setMoved(true);
-              announce('Your saved details were removed from this browser.');
-            }}
-          />
+          <PlanView profile={profile} focusHeading={moved} onEdit={edit} onForget={forget} />
         ) : (
           <IntakeForm initial={profile} focusHeading={moved} onSubmit={submit} />
         )}

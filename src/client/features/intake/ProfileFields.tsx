@@ -1,4 +1,10 @@
 /** Household and travel fieldsets of the intake form (docs/01 F1), driven by field tables. */
+import {
+  DAYS_PER_WEEK,
+  HOUSEHOLD_MAX,
+  MAX_COMMUTE_KM,
+  MAX_EXERCISE_MIN,
+} from '../../../shared/limits.js';
 import type { Household, Lifestyle } from '../../../shared/schema/profile.js';
 import { CheckField, NumberField, SelectField } from '../../components/Fields.js';
 import { EXERCISE_OPTIONS, HOUR_OPTIONS, MODE_OPTIONS } from '../../lib/labels.js';
@@ -8,10 +14,10 @@ type CountKey = 'adults' | 'over65' | 'under5' | 'children';
 type FlagKey = 'pregnant' | 'respiratory' | 'heart';
 
 const COUNTS: readonly { key: CountKey; label: string; max: number }[] = [
-  { key: 'adults', label: 'Adults (18–64)', max: 12 },
-  { key: 'over65', label: 'Adults over 65', max: 8 },
-  { key: 'under5', label: 'Children under 5', max: 8 },
-  { key: 'children', label: 'Children 5–17', max: 10 },
+  { key: 'adults', label: 'Adults (18–64)', max: HOUSEHOLD_MAX.adults },
+  { key: 'over65', label: 'Adults over 65', max: HOUSEHOLD_MAX.over65 },
+  { key: 'under5', label: 'Children under 5', max: HOUSEHOLD_MAX.under5 },
+  { key: 'children', label: 'Children 5–17', max: HOUSEHOLD_MAX.children },
 ];
 
 const FLAGS: readonly { key: FlagKey; label: string }[] = [
@@ -80,7 +86,7 @@ function CommuteFields({ value, onChange }: LifestyleProps) {
         unit="km"
         value={commute.km}
         min={0}
-        max={80}
+        max={MAX_COMMUTE_KM}
         step={0.5}
         onChange={(km) => {
           set({ km });
@@ -91,7 +97,7 @@ function CommuteFields({ value, onChange }: LifestyleProps) {
         label="Commute days a week"
         value={commute.daysPerWeek}
         min={0}
-        max={7}
+        max={DAYS_PER_WEEK}
         onChange={(daysPerWeek) => {
           set({ daysPerWeek });
         }}
@@ -140,7 +146,7 @@ function ExerciseFields({ value, onChange }: LifestyleProps) {
         unit="minutes"
         value={exercise.minutes}
         min={0}
-        max={180}
+        max={MAX_EXERCISE_MIN}
         step={5}
         onChange={(minutes) => {
           set({ minutes });

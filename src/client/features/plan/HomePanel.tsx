@@ -1,37 +1,9 @@
 /** Home air: modelled indoor PM2.5, purifier verdict and ranked hacks with what-if toggles (F3). */
-import type { Choices, Cost, Plan, PurifierVerdict } from '../../../shared/engine/types.js';
 import { hackIsOn, toggleHack } from '../../../shared/engine/whatIf.js';
 import { CheckField } from '../../components/Fields.js';
 import { DoseMeter } from '../../components/PlanBits.js';
-
-const COST: Record<Cost, string> = {
-  free: 'Free',
-  low: 'Low cost',
-  medium: 'Costs more',
-  none: '',
-};
-
-const percent = (fraction: number): number => Math.round(fraction * 100);
-
-function purifierText(verdict: PurifierVerdict): string {
-  const need = `This room needs a clean-air delivery rate (CADR) of about ${verdict.requiredCadr} m³/h.`;
-  switch (verdict.status) {
-    case 'none':
-      return `${need} You have no purifier yet; see the first fixes below.`;
-    case 'undersized':
-      return `${need} Yours covers ${percent(verdict.coverage)}% of that — too small to keep up.`;
-    case 'adequate':
-      return `${need} Yours covers ${percent(verdict.coverage)}%: it helps, especially with the door shut.`;
-    case 'good':
-      return `${need} Yours is big enough. Run it with doors and windows shut.`;
-  }
-}
-
-interface PanelProps {
-  plan: Plan;
-  choices: Choices;
-  onChoices: (next: Choices) => void;
-}
+import { COST_LABELS, percent, purifierText } from '../../lib/labels.js';
+import type { PanelProps } from './panelProps.js';
 
 export function HomePanel({ plan, choices, onChoices }: PanelProps) {
   const { indoor } = plan;
@@ -55,7 +27,7 @@ export function HomePanel({ plan, choices, onChoices }: PanelProps) {
                   <strong>−{hack.reductionPct}%</strong> indoor PM2.5
                 </li>
               ) : null}
-              {hack.cost === 'none' ? null : <li>{COST[hack.cost]}</li>}
+              {hack.cost === 'none' ? null : <li>{COST_LABELS[hack.cost]}</li>}
               <li class="rule">Rule {hack.ruleId}</li>
             </ul>
             {hack.choice ? (

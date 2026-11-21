@@ -79,6 +79,10 @@ describe('safety', () => {
     expect(unknownNumbers('Wear an N95; call 112; 3 steps', ctx)).toEqual([]);
     expect(unknownNumbers('It will reach 777 tonight', ctx)).toEqual(['777']);
   });
+
+  it('allows clock times, as the prompt does', () => {
+    expect(unknownNumbers('Open the windows at 18:45 and close them by 7:15.', ctx)).toEqual([]);
+  });
 });
 
 describe('fallback answers', () => {

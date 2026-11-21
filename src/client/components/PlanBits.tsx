@@ -1,6 +1,11 @@
 /** Small presentational pieces shared by the plan tabs. */
+import { CIGARETTE_UG_M3 } from '../../shared/engine/data/scales.js';
 import type { Alert, Dose } from '../../shared/engine/types.js';
-import { formatInt } from '../lib/labels.js';
+import { doseChangeText, formatInt } from '../lib/labels.js';
+
+/** Meter colour bands: green below 60 % of the usual dose, amber up to 90 %, red above. */
+const METER_LOW = 0.6;
+const METER_HIGH = 0.9;
 
 /** Safety alerts. Danger alerts use role="alert" so they are announced once on arrival. */
 export function AlertList({ alerts }: { alerts: readonly Alert[] }) {
@@ -33,12 +38,7 @@ interface DoseMeterProps {
 
 /** Usual day vs. Smogwise day: what the household breathes in, as µg and cigarette-equivalents. */
 export function DoseMeter({ usual, withPlan, reductionPct }: DoseMeterProps) {
-  const change =
-    reductionPct > 0
-      ? `${reductionPct}% less PM2.5 breathed in`
-      : reductionPct < 0
-        ? `${-reductionPct}% more PM2.5 breathed in`
-        : 'No change yet';
+  const change = doseChangeText(reductionPct);
   return (
     <section class="panel dose" aria-labelledby="dose-title">
       <h2 id="dose-title">What you breathe in today</h2>
@@ -59,16 +59,16 @@ export function DoseMeter({ usual, withPlan, reductionPct }: DoseMeterProps) {
         id="dose-meter"
         min={0}
         max={Math.max(usual.totalUg, withPlan.totalUg, 1)}
-        low={usual.totalUg * 0.6}
-        high={usual.totalUg * 0.9}
+        low={usual.totalUg * METER_LOW}
+        high={usual.totalUg * METER_HIGH}
         optimum={0}
         value={withPlan.totalUg}
       >
         {formatInt(withPlan.totalUg)} µg
       </meter>
       <p class="hint">
-        Estimates for one adult on a typical day, from the forecast, your home and your choices. 22
-        µg/m³ of PM2.5 over a day ≈ one cigarette (Berkeley Earth).
+        Estimates for one adult on a typical day, from the forecast, your home and your choices.{' '}
+        {CIGARETTE_UG_M3} µg/m³ of PM2.5 over a day ≈ one cigarette (Berkeley Earth).
       </p>
     </section>
   );

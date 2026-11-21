@@ -1,4 +1,5 @@
 /** A02 — sensitive groups; A03 — personal tier (docs/03). */
+import { SENSITIVE_GROUPS } from '../schema/ai.js';
 import type { Household } from '../schema/profile.js';
 import { TIER, TIER_FLOORS } from './data/scales.js';
 import type { SensitiveGroup, Tier } from './types.js';
@@ -24,14 +25,6 @@ const SENSITIVE_WHEN: Record<SensitiveGroup, (h: Household) => boolean> = {
   respiratory: (h) => h.respiratory,
   heart: (h) => h.heart,
 };
-
-const SENSITIVE_GROUPS: readonly SensitiveGroup[] = [
-  'under5',
-  'over65',
-  'pregnant',
-  'respiratory',
-  'heart',
-];
 
 /** Members whose presence makes the household's advice stricter. */
 export function sensitiveGroups(household: Household): SensitiveGroup[] {

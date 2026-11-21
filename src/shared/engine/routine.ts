@@ -1,6 +1,7 @@
 /** R01–R09 — the time-slotted low-emission day (docs/03). */
+import { reductionPct, round } from '../math.js';
 import type { Household, Lifestyle } from '../schema/profile.js';
-import { formatHour, formatWindow, round } from '../time.js';
+import { formatHour, formatWindow } from '../time.js';
 import { commutes } from './choices.js';
 import { fill, ROUTINE_COPY } from './data/copy.js';
 import { burnsFuelIndoors, MODES, N95_FACTOR } from './data/factors.js';
@@ -38,7 +39,7 @@ function step(
 
 const ambientAt = (ctx: RoutineContext, hour: number): number => round(ctx.ambient[hour] ?? 0);
 const savedPct = (before: number, after: number): number =>
-  Math.max(0, Math.round((1 - after / Math.max(before, 1)) * 100));
+  Math.max(0, reductionPct(before, after));
 
 /** R01 + R02: when to keep windows shut and when to air the home. */
 function windowSteps(ctx: RoutineContext): RoutineStep[] {
