@@ -7,7 +7,6 @@
 > the choice.
 
 **Challenge:** [Challenge 6] Urban Air Quality Assistant
-**Target:** 100 in every evaluation parameter.
 
 ---
 
@@ -27,20 +26,6 @@
 | 10  | `10_BUILD_PLAN.md`      | Ordered phases, verification gates, submission checklist   | All                                   |
 
 ---
-
-## Lessons carried over from Challenge 5 (Mehfil, ~97%)
-
-Mehfil was strong. These are the gaps an automated reviewer could still find, and how this
-project closes each of them:
-
-| Gap in Challenge 5                                                      | Fix in Challenge 6                                                                                   |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Docs mentioned a CI secret scan, but `.github/workflows/` did not exist | Real `ci.yml`: lint, format, typecheck, tests + coverage, build, bundle budget, audit, e2e, gitleaks |
-| React 19 + three self-hosted variable fonts (≈160 kB of fonts)          | Preact (~4 kB) and the system font stack: **0 bytes of web fonts**                                   |
-| Static domain data only                                                 | Live, location-specific air-quality forecast (Open-Meteo, no key), cached and validated server-side  |
-| Some claims were hard to verify from the repo alone                     | Every README claim links to a file; numbers in the README are produced by scripts or tests           |
-| Large surface (280 files) for a reviewer to sample                      | Smaller, flatter tree; every module has one job and a TSDoc header                                   |
-| Build-time-only packages listed alongside runtime ones                  | Runtime `dependencies` are only what the server executes; everything else is `devDependencies`       |
 
 ## Core design principle
 

@@ -34,7 +34,7 @@ Four **sample households** (Delhi, Lahore, Beijing, Gurugram) show a complete pl
 | "sustainable alternatives"                              | Commute, carpool, WFH, cooking fuel, heating and composting swaps                                      | `src/shared/engine/swaps.ts`                                                    |
 | "tailored to their location"                            | City search or rounded geolocation → forecast, local index scale, local time, reporting channel        | `src/client/features/intake/LocationField.tsx`, `src/shared/engine/location.ts` |
 | "and lifestyle"                                         | Commute mode/distance/days/time, exercise, fuels, heating, home tightness, room size, purifier, habits | `src/shared/schema/profile.ts`                                                  |
-| "clearly explaining the direct impact of their choices" | Every card shows an impact figure and its rule id; what-if toggles recompute the inhaled dose live     | `src/shared/engine/exposure.ts`, `src/client/lib/whatIf.ts`                     |
+| "clearly explaining the direct impact of their choices" | Every card shows an impact figure and its rule id; what-if toggles recompute the inhaled dose live     | `src/shared/engine/exposure.ts`, `src/shared/engine/whatIf.ts`                  |
 
 ## Approach and logic: rules for numbers, AI for words
 
@@ -96,7 +96,7 @@ tests/        unit, property, api, components, e2e
 - TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`), **no `any`**, no
   `@ts-ignore`, no non-null assertions in `src/`.
 - ESLint strict-type-checked + jsx-a11y strict, **zero warnings**; complexity ≤ 10, functions ≤ 40
-  lines, files ≤ 250 lines; layer boundaries and engine purity (`Date.now`, `Math.random`, `fetch`
+  lines (components ≤ 60), files ≤ 250 lines; layer boundaries and engine purity (`Date.now`, `Math.random`, `fetch`
   banned in the engine) are **lint-enforced** ([`eslint.config.js`](eslint.config.js)).
 - No `console` statements anywhere (lint-enforced repo-wide); no code or style file over 300 lines.
 - Single responsibility in the UI: components only render; data, state and announcements live
@@ -113,7 +113,8 @@ tests/        unit, property, api, components, e2e
 - Gemini key only in the server environment; the build fails if the client bundle mentions it.
 - Strict CSP (no `unsafe-inline`/`unsafe-eval`), HSTS, nosniff, COOP/CORP, frame-ancestors none,
   Permissions-Policy (geolocation for this origin only) — same headers in `vercel.json` (tested to match).
-- zod `.strict()` on every query and body, upstream response, model output and stored profile;
+- Strict zod schemas (unknown keys rejected) on every query and body, model output, stored
+  profile and server reply; Open-Meteo responses validated for the fields used;
   16 kB JSON limit, 415 for non-JSON, 403 for cross-site POSTs, per-IP rate limits (429 tested).
 - Upstream: fixed hosts, `URLSearchParams`, 5 s timeout, 512 kB cap, schema validation (no SSRF).
 - LLM: deterministic red-flag routing, sanitised and delimited questions, structured output,
@@ -125,8 +126,8 @@ tests/        unit, property, api, components, e2e
 
 | Metric                      | Budget  | Measured                 |
 | --------------------------- | ------- | ------------------------ |
-| Initial JS (gzip)           | ≤ 35 kB | **25.1 kB**              |
-| Total JS, all chunks (gzip) | ≤ 60 kB | **42.0 kB**              |
+| Initial JS (gzip)           | ≤ 35 kB | **25.4 kB**              |
+| Total JS, all chunks (gzip) | ≤ 60 kB | **42.8 kB**              |
 | CSS (gzip)                  | ≤ 8 kB  | **2.8 kB**               |
 | Web fonts                   | 0       | **0** (system fonts)     |
 | `buildPlan`                 | < 2 ms  | asserted over 1,000 runs |
@@ -144,8 +145,8 @@ npm test          # Vitest with coverage gates (fails below them)
 npm run test:e2e  # Playwright on the production build, no API key, upstream routed to fixtures
 ```
 
-**345** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
-Coverage: **100 % statements · 100 % functions · 100 % lines · 97.3 % branches**; the
+**357** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
+Coverage: **100 % statements · 100 % functions · 100 % lines · 97.0 % branches**; the
 decision engine is at 100 % on every measure. Property tests (fast-check, 500 runs each) prove: the index is monotonic; a
 purifier, an N95 or removing an indoor source never increases dose; the clean window is never
 beaten; `buildPlan` never throws. The property suite found a real modelling edge case — sealing a
@@ -170,18 +171,29 @@ nvm use            # Node 22+
 npm ci
 cp .env.example .env.local   # optional: add GEMINI_API_KEY; without it AI falls back to rules
 npm run dev        # http://localhost:5173 (API on :8080)
-npm run check      # lint, format, typecheck, tests, build, bundle budgets
+npm run check      # lint, dead code, duplication, format, typecheck, tests, build, budgets
+npm run test:e2e   # Playwright end-to-end and accessibility tests on the production build
 ```
 
 Deploy: Vercel (static client + `api/index.ts`), or `docker build` for Cloud Run. Set
 `GEMINI_API_KEY` (and optionally `GEMINI_MODEL`) in the host's secret store.
+
+### Demo video
+
+`npm run demo` drives the live site (real air data and Gemini) in Chromium and records
+`demo/raw/*.webm` with on-screen captions; set `BASE_URL` to record another deployment. Convert
+for upload with:
+
+```bash
+ffmpeg -i demo/raw/*.webm -c:v libx264 -crf 22 -pix_fmt yuv420p -movflags +faststart demo/smogwise-demo.mp4
+```
 
 ## Assumptions
 
 - **Not medical advice.** Smogwise never names medicines or doses; red-flag symptoms always get the
   emergency answer.
 - Exposure, indoor and emission figures use **published averages** (EPA, CPCB, WHO, India GHG
-  Program, CEA, EMEP/EEA, peer-reviewed studies — cited in `docs/03`). They are estimates for
+  Program, CEA, EMEP/EEA, peer-reviewed studies — cited in `docs/03_DECISION_ENGINE.md`). They are estimates for
   comparing choices for one adult on a typical day, and are labelled as such.
 - The forecast is the CAMS model via Open-Meteo, not a ground monitor; the source is always shown,
   and a local reading can be entered instead.

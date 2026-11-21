@@ -5,7 +5,8 @@
    [`docs/03_DECISION_ENGINE.md`](docs/03_DECISION_ENGINE.md) and their ids must match the code.
 3. Make the change with tests. New UI needs an axe check; new engine logic needs unit tests and, for
    invariants, a property test.
-4. `npm run check` (lint, format, typecheck, tests with coverage gates, build, bundle budgets) and
+4. `npm run check` (lint, dead code, duplication, format, typecheck, tests with coverage gates,
+   build, bundle budgets) and
    `npm run test:e2e` must pass.
 5. Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`,
    `test:`, `refactor:`, `chore:`). Explain any new runtime dependency in the commit body.

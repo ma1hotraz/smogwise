@@ -2,19 +2,20 @@
 
 ## 1. Assets and threats (STRIDE-lite)
 
-| Asset / surface     | Threat                                        | Control                                                                                                 |
-| ------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Gemini API key      | Leak via client bundle, logs or repo          | Server env only; bundle scan in CI; gitleaks; key never logged; `.env*` git-ignored                     |
-| AI routes (cost)    | Abuse / denial of wallet                      | Per-IP 10/min + 200/day, global 120/min, cache + in-flight de-dup, token caps, timeouts                 |
-| Model output        | Prompt injection, harmful or invented content | Sanitise, delimit, schema output, zod, number check, id whitelist, text-only rendering                  |
-| Upstream fetch      | SSRF, slow/huge responses, poisoned data      | Fixed hosts (no user-supplied URL), `URLSearchParams`, 5 s timeout, 512 kB cap, zod validation          |
-| HTTP inputs         | Injection, oversized bodies, type confusion   | zod `.strict()` on every query/body, 16 kB JSON limit, 415 for non-JSON, numeric bounds                 |
-| Browser             | XSS, clickjacking, mixed content              | Strict CSP (no inline script/style), no `dangerouslySetInnerHTML`, frame-ancestors none, HSTS           |
-| Cross-site requests | CSRF-style misuse of AI routes                | Same-origin guard on POST (Origin / Sec-Fetch-Site), JSON content type required                         |
-| User privacy        | Location and health data exposure             | 0.1° rounding in the browser, profile only in localStorage, no cookies, no analytics, no server storage |
-| Errors              | Information disclosure                        | Generic `{ error: code }`; stack traces only in logs; request id for correlation                        |
-| Dependencies        | Known vulnerabilities, supply chain           | `npm audit --omit=dev --audit-level=high` in CI, Dependabot, lockfile, minimal runtime deps             |
-| Container           | Privilege escalation                          | Multi-stage, non-root user, no package manager in the runtime image                                     |
+| Asset / surface     | Threat                                        | Control                                                                                                                |
+| ------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Gemini API key      | Leak via client bundle, logs or repo          | Server env only; bundle scan in CI; gitleaks; key never logged; `.env*` git-ignored                                    |
+| AI routes (cost)    | Abuse / denial of wallet                      | Per-IP 10/min + 200/day, global 120/min, cache + in-flight de-dup, token caps, timeouts                                |
+| Model output        | Prompt injection, harmful or invented content | Sanitise, delimit, schema output, zod, number check, id whitelist, text-only rendering                                 |
+| Upstream fetch      | SSRF, slow/huge responses, poisoned data      | Fixed hosts (no user-supplied URL), `URLSearchParams`, 5 s timeout, 512 kB cap, zod validation                         |
+| HTTP inputs         | Injection, oversized bodies, type confusion   | strict zod schemas (unknown keys rejected) on every query and body, 16 kB JSON limit, 415 for non-JSON, numeric bounds |
+| Browser             | XSS, clickjacking, mixed content              | Strict CSP (no inline script/style), no `dangerouslySetInnerHTML`, frame-ancestors none, HSTS                          |
+| Cross-site requests | CSRF-style misuse of AI routes                | Same-origin guard on POST (Origin / Sec-Fetch-Site), JSON content type required                                        |
+| User privacy        | Location and health data exposure             | 0.1° rounding in the browser, profile only in localStorage, no cookies, no analytics, no server storage                |
+| Errors              | Information disclosure                        | Generic `{ error: code }`; stack traces only in logs; request id for correlation                                       |
+| Dependencies        | Known vulnerabilities, supply chain           | `npm audit --omit=dev --audit-level=high` in CI, Dependabot, lockfile, minimal runtime deps                            |
+| Supply chain (CI)   | Tampered actions or tools                     | Actions pinned to commit SHAs; gitleaks verified by sha256 before it runs                                              |
+| Container           | Privilege escalation                          | Multi-stage, non-root user, `apk` removed from the runtime image                                                       |
 
 ## 2. Mandatory controls (each has a test)
 
@@ -24,7 +25,9 @@ frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests`; HSTS 1 y
   `X-Content-Type-Options: nosniff`; `Referrer-Policy: strict-origin-when-cross-origin`;
   `Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=()`; COOP/CORP
   same-origin; `X-Frame-Options: DENY`; `x-powered-by` removed. Same headers in `vercel.json`.
-- **Validation:** every route parses with zod; unknown keys rejected; lat/lon finite and bounded;
+- **Validation:** every route parses with strict zod schemas (unknown keys rejected), as do stored
+  profiles, model output and the client's view of server replies; Open-Meteo responses are
+  validated for the fields used, tolerating extra fields from the third party; lat/lon finite and bounded;
   `q` Unicode letters/marks/spaces and `.,'-()` only.
 - **Rate limiting:** proven by a test that receives 429.
 - **Upstream hardening:** proven by tests for timeout, oversized body, invalid JSON, schema

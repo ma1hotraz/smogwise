@@ -10,7 +10,6 @@
 | Web fonts                   | 0 bytes                           |
 | Images                      | inline SVG only (favicon ≤ 1 kB)  |
 | `buildPlan` average         | < 2 ms (asserted over 1,000 runs) |
-| Lighthouse mobile           | 100 / 100 / 100 / 100 target      |
 
 ## 2. Techniques
 
@@ -39,4 +38,3 @@
 
 - `npm run build && node scripts/check-bundle.mjs` prints sizes and fails on budget breach.
 - `tests/unit/engine/perf.test.ts` asserts the `buildPlan` budget.
-- Lighthouse scores recorded in the README from the production build.

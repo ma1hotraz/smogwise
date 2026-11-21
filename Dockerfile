@@ -8,10 +8,11 @@ COPY . .
 RUN npm run build
 
 # ---- runtime: plain Alpine plus the Node binary, one bundled server file and the static client.
-# Copying only the binary (instead of the node image) leaves out npm and yarn, which are not needed.
+# Copying only the binary (instead of the node image) leaves out npm and yarn; apk is removed below.
 FROM alpine:3.22
 ENV NODE_ENV=production PORT=8080
-RUN apk add --no-cache libstdc++ && adduser -D -u 1000 app
+# Install the one runtime library, add a non-root user, then remove the package manager itself.
+RUN apk add --no-cache libstdc++ && adduser -D -u 1000 app && apk --purge del apk-tools
 COPY --from=build /usr/local/bin/node /usr/local/bin/node
 WORKDIR /app
 COPY --from=build --chown=app:app /app/dist ./dist

@@ -13,15 +13,15 @@
 
 | Route        | Max output tokens | Timeout | Cache                                  | Fallback                         |
 | ------------ | ----------------- | ------- | -------------------------------------- | -------------------------------- |
-| `/api/brief` | 300               | 8 s     | 15 min TTL, key = SHA-256(context)     | `composeBrief(context)` template |
+| `/api/brief` | 300               | 10 s    | 15 min TTL, key = SHA-256(context)     | `composeBrief(context)` template |
 | `/api/ask`   | 500               | 10 s    | 10 min TTL, key = SHA-256(q + context) | `answerByIntent(question, ctx)`  |
 
-One retry on 429/5xx with jitter; thinking level minimal; model from `GEMINI_MODEL`
+Both routes share one timeout, `AI_TIMEOUT_MS` (default 10 s). One retry on 429/5xx with jitter; thinking level minimal; model from `GEMINI_MODEL`
 (default `gemini-3.5-flash-lite`). In-flight requests with the same key share one promise.
 
 ## 3. Context (the only data the model sees)
 
-Built by `src/shared/ai/context.ts`, validated by `AiContextSchema` (`.strict()`, ≤ 8 kB):
+Built by `src/shared/ai/context.ts`, validated by the `AiContext` strict schema (inside the 16 kB body limit):
 
 ```json
 {
@@ -33,7 +33,7 @@ Built by `src/shared/ai/context.ts`, validated by `AiContextSchema` (`.strict()`
   "band": "Very Poor",
   "tier": 4,
   "trend": "rising",
-  "sensitive": ["child_under_5", "respiratory"],
+  "sensitive": ["under5", "respiratory"],
   "cleanWindow": { "start": "14:00", "end": "16:00", "pm25": 88 },
   "worstWindow": { "start": "07:00", "end": "09:00", "pm25": 171 },
   "alerts": [{ "id": "AL02", "title": "…" }],
@@ -79,7 +79,7 @@ stripped; answers are rendered as text (never HTML).
 
 ## 6. Guardrails (in order)
 
-1. **Body validation** — zod `.strict()`; question 1–400 chars after trim; JSON-only; 16 kB cap.
+1. **Body validation** — strict zod schemas (unknown keys rejected); question 1–400 chars after trim; JSON-only; 16 kB cap.
 2. **Red-flag check (deterministic, before any model call)** — chest pain, can't breathe,
    breathless at rest, blue lips, fainting, confusion, seizure (EN + common Hindi terms) →
    `source: 'safety'` emergency answer. The model is never asked about emergencies.
@@ -98,3 +98,10 @@ play, mask, purifier/filter, window/ventilate/air out, commute/metro/bike, heate
 cooking/kitchen, pregnant, elderly, outside/go out, general. Each intent composes an answer from
 the plan (times, tier, window, impact numbers) and cites the relevant rule ids. It is also used
 by the client when the server is unreachable, so Ask Smogwise always answers.
+
+## 8. Implementations
+
+`AiService` has two implementations, chosen once in `src/server/app.ts`: `rulesService` (no API
+key) and `createGeminiService` (Gemini, with caches). Every model call goes through one guarded
+pipeline in `src/server/ai/service.ts`: model → zod → number check → accept, otherwise the rules
+answer from `src/shared/ai/rules.ts`, which the browser also uses when the server is unreachable.

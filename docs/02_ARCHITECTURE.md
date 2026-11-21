@@ -51,35 +51,43 @@ src/
       swaps.ts                 S01–S09 alternatives with CO₂ / PM2.5 / dose impact
       community.ts             C01–C03 scaled impact, actions
       alerts.ts                AL01–AL06 safety alerts
-      choices.ts               what-if choices and the engine's default recommendations
+      choices.ts               the engine's default recommendations and how choices change the day
+      whatIf.ts                one handler table per hack and swap kind (on/off, toggle, choices)
       fallbackAir.ts           seasonal estimate and manual reading
       plan.ts                  buildPlan(): orchestrates the above
       types.ts                 output types
       data/                    constants with sources, and user-facing copy
-    ai/                        context builder, safety (red flags, sanitiser, number check), fallbacks
+    ai/                        context builder, safety (red flags, sanitiser, number check), rules answers
     samples.ts, time.ts        sample households; pure time helpers
+    limits.ts                  limits shared by schemas, server and forms (question length, PM2.5 cap)
   server/
     app.ts                     createApp(deps) — DI for upstream fetch, AI, clock, logger
     bootstrap.ts, index.ts     wiring from the environment; Node entry
     config.ts, logger.ts       env parsing with zod; JSON logs with redaction
+    clock.ts, requestId.ts     injected time source; per-request id for logs
     routes.ts                  health, geocode, air, brief, ask
     cache.ts                   TTL + LRU cache with in-flight de-duplication
     middleware/                security headers and limits, same-origin guard, errors
     upstream/openMeteo.ts      fixed-host fetch with timeout, size cap, schema validation
-    ai/                        Gemini client, prompts, brief/ask service
+    ai/                        AiClient port (Gemini, disabled), prompts, and two AiService strategies:
+                               rulesService and createGeminiService (chosen once in app.ts)
   client/
     main.tsx, App.tsx          entry and shell (skip link, preferences)
     components/                Tabs, Fields, AirVisuals (band chip, hour strip), PlanBits (alerts, dose meter)
-    features/intake/           samples, location combobox, household / travel / home fields
+    features/intake/           samples, location combobox (usePlaceSearch, useMyLocation), field tables
     features/plan/             usePlanModel (view model), air header, Today, Home air, Swaps, plan view
     features/community/        scale, actions, printable notice (lazy)
     features/ask/              useAsk (state) and the assistant panel (lazy)
-    lib/                       api, storage, announcer, hooks (useAir, useBrief, useReadAloud), prefs, what-if, lazy, focus
-    styles/                    tokens.css, base.css, print.css
+    lib/                       shared client code: api, storage, prefs, geo, labels, speech, announcer,
+                               lazy, focus, and hooks used by several features (useAir, useBrief, useReadAloud)
+    styles/                    tokens, base, forms, plan, chart and print stylesheets
 api/index.ts                   Vercel serverless entry (same Express app)
 tests/                         unit, property, api, components, e2e, helpers
 scripts/check-bundle.mjs       enforces bundle budgets and the client secret scan
 ```
+
+Convention: a hook used by one feature lives with that feature (`useAsk`, `usePlanModel`, the
+intake hooks); hooks used by several features live in `client/lib`. Components only render.
 
 ## 4. Data models (summarised; source of truth is `src/shared/schema/`)
 
@@ -145,10 +153,10 @@ type Plan = {
   sensitive: SensitiveGroup[];
   windows: { clean: Window | null; worst: Window | null; meaningful: boolean };
   routine: RoutineStep[]; // { hour, title, detail, ruleId, impact? }
-  alerts: Alert[]; // { level: 'emergency' | 'warning' | 'info', title, detail, ruleId }
+  alerts: Alert[]; // { level: 'danger' | 'warning' | 'info', title, detail, ruleId }
   indoor: { ratio: number; homePm25: number; hacks: Hack[]; purifier: PurifierVerdict };
   swaps: Swap[]; // { id, title, co2KgWeek, pm25GWeek, doseDeltaPct, tradeOff?, ruleId }
-  exposure: { baseline: Dose; withPlan: Dose }; // Dose = { totalUg, byPlace, cigarettes }
+  exposure: { usual: Dose; withPlan: Dose; reductionPct: number }; // Dose = { totalUg, volumeM3, byPlace, cigarettes }
   community: CommunityAction[];
 };
 ```
@@ -162,7 +170,7 @@ All responses are JSON with `Cache-Control: no-store`; errors are `{ "error": "<
 | GET    | `/api/health`  | —                                                                          | `{ ok: true, ai: 'enabled' \| 'disabled', version }`                           | —                       |
 | GET    | `/api/geocode` | `q` 2–60 chars, letters/spaces/`.,'-()` incl. Unicode                      | `{ results: Place[] }` (≤ 5)                                                   | 400, 429, 502           |
 | GET    | `/api/air`     | `lat` −90…90, `lon` −180…180 (rounded to 0.1 server-side too)              | `AirData` with `source: 'open-meteo'`                                          | 400, 429, 502           |
-| POST   | `/api/brief`   | `{ context: AiContext }` (≤ 8 kB, `.strict()`)                             | `{ headline, summary, source: 'gemini' \| 'rules' }`                           | 400, 403, 413, 415, 429 |
+| POST   | `/api/brief`   | `{ context: AiContext }` (16 kB body limit, strict schema)                 | `{ headline, summary, source: 'gemini' \| 'rules' }`                           | 400, 403, 413, 415, 429 |
 | POST   | `/api/ask`     | `{ question: string(1..400), context: AiContext, language: 'en' \| 'hi' }` | `{ answer, citedRuleIds, followUps, source: 'gemini' \| 'rules' \| 'safety' }` | 400, 403, 413, 415, 429 |
 
 `AiContext` is a _summary_ built by `src/shared/ai/context.ts` — city name, scale, PM2.5, band,

@@ -50,8 +50,9 @@ routes `/api/air` and `/api/geocode` to fixtures.
   injection text stays data; 400 on unknown keys; 413 over limit; 415 non-JSON; 403 cross-site; 429.
 - Security headers on API and static responses; no `x-powered-by`; errors have no stack.
 
-**Components** — render, interaction and axe for: Tabs, Combobox, Meter, Toggle, Alert, ForecastChart
-(+ table), RoutineList, HackList, SwapList, CommunityPanel, AskPanel, Intake steps, App shell.
+**Components** — render, interaction and axe for: Tabs, the form fields, BandChip, HourStrip (+ table),
+AlertList, DoseMeter, IntakeForm (samples, location combobox, field tables), PlanView (Today, Home
+air, Swaps, Community, Ask), the App shell.
 
 **E2E** — sample profile → Today in one click; own profile via keyboard only; toggling a swap
 updates the meter and live region; Ask answers (no key); community print view; persistence after

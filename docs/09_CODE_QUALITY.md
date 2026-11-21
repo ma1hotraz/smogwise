@@ -2,19 +2,19 @@
 
 ## 1. Conventions
 
-| Rule                  | Limit / practice                                                                           |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| File length           | ≤ 250 lines in `src/` (data tables excepted); no code or style file over 300 lines         |
-| Function length       | ≤ 40 lines (components ≤ 120)                                                              |
-| Cyclomatic complexity | ≤ 10                                                                                       |
-| Nesting depth         | ≤ 3                                                                                        |
-| Types                 | No `any`, no `@ts-ignore`, no non-null assertions in `src/`                                |
-| Naming                | Domain words from the spec (tier, window, dose, swap, hack)                                |
-| Comments              | TSDoc on every exported function in `shared` and `server`; rule ids in code match docs/03  |
-| Magic numbers         | Only in `engine/data/*` with a source comment                                              |
-| Errors                | Typed results at boundaries; no swallowed errors; generic HTTP errors                      |
-| Console               | No `console` anywhere, scripts included (`no-console`, repo-wide); scripts write to stdout |
-| Side effects          | Injected (fetch, AI, clock, logger, storage)                                               |
+| Rule                  | Limit / practice                                                                                    |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| File length           | ≤ 250 lines in `src/` (data tables excepted); no code or style file over 300 lines                  |
+| Function length       | ≤ 40 lines (components ≤ 60) in `src/`; test files are exempt (their `describe` blocks group cases) |
+| Cyclomatic complexity | ≤ 10                                                                                                |
+| Nesting depth         | ≤ 3                                                                                                 |
+| Types                 | No `any`, no `@ts-ignore`, no non-null assertions in `src/`                                         |
+| Naming                | Domain words from the spec (tier, window, dose, swap, hack)                                         |
+| Comments              | TSDoc on every exported function in `shared` and `server`; rule ids in code match docs/03           |
+| Magic numbers         | Only in `engine/data/*` with a source comment                                                       |
+| Errors                | Typed results at boundaries; no swallowed errors; generic HTTP errors                               |
+| Console               | No `console` anywhere, scripts included (`no-console`, repo-wide); scripts write to stdout          |
+| Side effects          | Injected (fetch, AI, clock, logger, storage)                                                        |
 
 ## 2. Layer boundaries (lint-enforced with `no-restricted-imports`)
 
