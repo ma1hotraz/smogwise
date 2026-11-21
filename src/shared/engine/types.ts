@@ -124,12 +124,13 @@ export interface Swap {
   choice: SwapChoice;
 }
 
-export type Place = 'sleep' | 'home' | 'work' | 'commute' | 'exercise';
+/** Where the time of day is spent, for the dose model (docs/03 E). */
+export type MicroEnv = 'sleep' | 'home' | 'work' | 'commute' | 'exercise';
 
 export interface Dose {
   totalUg: number;
   volumeM3: number;
-  byPlace: Record<Place, number>;
+  byPlace: Record<MicroEnv, number>;
   cigarettes: number;
 }
 

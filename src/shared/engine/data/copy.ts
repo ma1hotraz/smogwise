@@ -9,6 +9,15 @@ export interface Copy {
   detail: string;
 }
 
+/** How each sensitive group is named in sentences (AL02). */
+export const SENSITIVE_LABELS = {
+  under5: 'a child under 5',
+  over65: 'an adult over 65',
+  pregnant: 'a pregnancy',
+  respiratory: 'asthma or COPD',
+  heart: 'a heart condition',
+} as const;
+
 export const ALERT_COPY = {
   AL01: {
     title: 'Carbon monoxide risk from your heater',

@@ -11,15 +11,17 @@ const COST: Record<Cost, string> = {
   none: '',
 };
 
+const percent = (fraction: number): number => Math.round(fraction * 100);
+
 function purifierText(verdict: PurifierVerdict): string {
   const need = `This room needs a clean-air delivery rate (CADR) of about ${verdict.requiredCadr} m³/h.`;
   switch (verdict.status) {
     case 'none':
       return `${need} You have no purifier yet; see the first fixes below.`;
     case 'undersized':
-      return `${need} Yours covers ${Math.round(verdict.coverage * 100)}% of that — too small to keep up.`;
+      return `${need} Yours covers ${percent(verdict.coverage)}% of that — too small to keep up.`;
     case 'adequate':
-      return `${need} Yours covers ${Math.round(verdict.coverage * 100)}%: it helps, especially with the door shut.`;
+      return `${need} Yours covers ${percent(verdict.coverage)}%: it helps, especially with the door shut.`;
     case 'good':
       return `${need} Yours is big enough. Run it with doors and windows shut.`;
   }
@@ -39,7 +41,7 @@ export function HomePanel({ plan, choices, onChoices }: PanelProps) {
       <p>
         On today’s average outdoor level ({plan.air.dayMeanPm25} µg/m³), your main room sits at
         about <strong>{indoor.homePm25} µg/m³</strong> indoors. Outdoor smog alone would give about{' '}
-        {Math.round(indoor.ratio * 100)}% of the outdoor level; the rest comes from indoor sources.
+        {percent(indoor.ratio)}% of the outdoor level; the rest comes from indoor sources.
       </p>
       <p>{purifierText(indoor.purifier)}</p>
       <ul class="cards">

@@ -11,6 +11,7 @@ import type { AiContext } from '../../../shared/schema/ai.js';
 import type { Profile } from '../../../shared/schema/profile.js';
 import { useAnnounce } from '../../lib/announcer.js';
 import { useAir, type AirStatus } from '../../lib/useAir.js';
+import { useNow } from '../../lib/useNow.js';
 
 export interface PlanModel {
   plan: Plan;
@@ -45,7 +46,8 @@ export function usePlanModel(profile: Profile): PlanModel {
   const [manual, setManual] = useState<number | null>(null);
   const [choices, setChoices] = useState<Choices>({});
   const { air, status } = useAir(profile.location, manual);
-  const plan = useMemo(() => buildPlan(profile, air, new Date(), choices), [profile, air, choices]);
+  const now = useNow();
+  const plan = useMemo(() => buildPlan(profile, air, now, choices), [profile, air, now, choices]);
   const context = useMemo(() => buildContext(plan, profile), [plan, profile]);
   useAnnouncements(status, profile.location.name, plan.exposure.reductionPct);
   return { plan, context, status, choices, setChoices, setManual };

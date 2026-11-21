@@ -1,11 +1,9 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-import { AiDisabledError, DisabledAiClient } from '../../../src/server/ai/client.js';
 import { TtlCache } from '../../../src/server/cache.js';
 import { systemClock } from '../../../src/server/clock.js';
-import { silentLogger } from '../../../src/server/logger.js';
-import { makeApp, sharmaContext } from '../../helpers/fakes.js';
+import { makeApp, sharmaContext, silentLogger } from '../../helpers/fakes.js';
 
 describe('TtlCache', () => {
   it('expires entries after the TTL', () => {
@@ -78,13 +76,7 @@ describe('same-origin guard', () => {
 });
 
 describe('small defaults', () => {
-  it('the disabled AI client always rejects with a named error', async () => {
-    const client = new DisabledAiClient();
-    expect(client.enabled).toBe(false);
-    await expect(client.generateJson()).rejects.toBeInstanceOf(AiDisabledError);
-  });
-
-  it('the system clock and silent logger work', () => {
+  it('the system clock and the silent test logger work', () => {
     expect(systemClock.now()).toBeInstanceOf(Date);
     expect(() => {
       silentLogger.log('info', 'quiet');

@@ -1,12 +1,5 @@
-/** Language-model client port (AiClient) and its Gemini and disabled implementations. */
+/** Language-model client port (AiClient) and its Gemini implementation. */
 import { ApiError, GoogleGenAI, ThinkingLevel } from '@google/genai';
-
-export class AiDisabledError extends Error {
-  constructor() {
-    super('AI is disabled');
-    this.name = 'AiDisabledError';
-  }
-}
 
 interface AiUsage {
   promptTokens?: number | undefined;
@@ -24,22 +17,17 @@ export interface GenerateArgs {
 
 /** The only door to a language model. Tests inject a fake; production uses Gemini. */
 export interface AiClient {
-  readonly enabled: boolean;
   /** Returns raw parsed JSON; callers must validate it with zod. */
   generateJson(args: GenerateArgs): Promise<unknown>;
-}
-
-export class DisabledAiClient implements AiClient {
-  readonly enabled = false;
-
-  generateJson(): Promise<unknown> {
-    return Promise.reject(new AiDisabledError());
-  }
 }
 
 const DEFAULT_MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 600;
 const RETRYABLE = (status: number): boolean => status === 429 || status >= 500;
+
+/** True when the model refused the request because of the thinking setting. */
+const rejectsThinking = (error: unknown): boolean =>
+  error instanceof ApiError && error.status === 400 && /thinking/i.test(error.message);
 
 const statusOf = (error: unknown): number | undefined =>
   error instanceof ApiError ? error.status : undefined;
@@ -69,7 +57,6 @@ interface GeminiOptions {
 }
 
 export class GeminiClient implements AiClient {
-  readonly enabled = true;
   private readonly ai: GoogleGenAI;
   private readonly maxRetries: number;
 
@@ -82,8 +69,9 @@ export class GeminiClient implements AiClient {
     try {
       return await this.callWithRetry(args, true);
     } catch (error) {
-      // A newer model may reject the thinking parameter; drop it rather than downgrade the model.
-      if (statusOf(error) === 400) {
+      // A model may reject the thinking parameter; drop it rather than downgrade the model.
+      // Any other 400 (a bad request) is not retried, so it never costs a second call.
+      if (rejectsThinking(error)) {
         return this.call(args, false);
       }
       throw error;

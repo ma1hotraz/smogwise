@@ -12,13 +12,13 @@ const HEADERS_TIMEOUT_MS = 10_000;
 const here = path.dirname(fileURLToPath(import.meta.url));
 // The bundled server sits next to the built client in dist/; in development Vite serves it.
 const clientDir = path.resolve(here, 'client');
-const { app, config, logger, ai } = bootstrap(
+const { app, config, logger, aiEnabled } = bootstrap(
   process.env,
   existsSync(path.join(clientDir, 'index.html')) ? clientDir : undefined,
 );
 
 const server = app.listen(config.port, '0.0.0.0', () => {
-  logger.log('info', 'listening', { port: config.port, ai: ai.enabled ? 'enabled' : 'disabled' });
+  logger.log('info', 'listening', { port: config.port, ai: aiEnabled ? 'enabled' : 'disabled' });
 });
 server.requestTimeout = REQUEST_TIMEOUT_MS;
 server.headersTimeout = HEADERS_TIMEOUT_MS;

@@ -3,28 +3,30 @@ import type { Lifestyle } from '../schema/profile.js';
 import { cigarettesFor } from './aqi.js';
 import { DAY, MODES, N95_FACTOR, RATE } from './data/factors.js';
 import { indoorPm, type HomeState } from './indoor.js';
-import type { Dose, Place } from './types.js';
+import type { Dose, MicroEnv } from './types.js';
 import { round } from '../time.js';
 
-const PLACES: readonly Place[] = ['sleep', 'home', 'work', 'commute', 'exercise'];
+const ENVS: readonly MicroEnv[] = ['sleep', 'home', 'work', 'commute', 'exercise'];
 const MAX_COMMUTE_MIN = 180;
+const HOURS_PER_DAY = 24;
+const MINUTES_PER_HOUR = 60;
 
 interface Slot {
   free: number;
-  minutes: Record<Place, number>;
+  minutes: Record<MicroEnv, number>;
 }
 
 type Schedule = Slot[];
 
 const emptySchedule = (): Schedule =>
-  Array.from({ length: 24 }, () => ({
-    free: 60,
+  Array.from({ length: HOURS_PER_DAY }, () => ({
+    free: MINUTES_PER_HOUR,
     minutes: { sleep: 0, home: 0, work: 0, commute: 0, exercise: 0 },
   }));
 
 /** Books minutes from `start`, spilling into later hours when an hour is already taken. */
-function book(schedule: Schedule, place: Place, start: number, minutes: number): void {
-  const from = start % 24;
+function book(schedule: Schedule, place: MicroEnv, start: number, minutes: number): void {
+  const from = start % HOURS_PER_DAY;
   let left = minutes;
   for (const slot of [...schedule.slice(from), ...schedule.slice(0, from)]) {
     const take = Math.min(left, slot.free);
@@ -35,28 +37,31 @@ function book(schedule: Schedule, place: Place, start: number, minutes: number):
 }
 
 const SLEEP_HOURS = new Set(
-  Array.from({ length: DAY.sleepHours }, (_, k) => (DAY.sleepStart + k) % 24),
+  Array.from({ length: DAY.sleepHours }, (_, k) => (DAY.sleepStart + k) % HOURS_PER_DAY),
 );
 
-/** Minutes per place for each local hour of a typical day. */
+/** Minutes per micro-environment for each local hour of a typical day. */
 export function schedule(lifestyle: Lifestyle, commuting: boolean): Schedule {
-  const plan = emptySchedule();
+  const day = emptySchedule();
   const { commute, exercise } = lifestyle;
   const mode = MODES[commute.mode];
   if (commuting && commute.mode !== 'wfh' && commute.km > 0) {
-    const leg = Math.min(MAX_COMMUTE_MIN, Math.round((commute.km / mode.speedKmh) * 60));
-    book(plan, 'commute', commute.departHour, leg);
-    book(plan, 'commute', commute.departHour + DAY.returnAfter, leg);
-    book(plan, 'work', commute.departHour, DAY.workHours * 60);
+    const leg = Math.min(
+      MAX_COMMUTE_MIN,
+      Math.round((commute.km / mode.speedKmh) * MINUTES_PER_HOUR),
+    );
+    book(day, 'commute', commute.departHour, leg);
+    book(day, 'commute', commute.departHour + DAY.returnAfter, leg);
+    book(day, 'work', commute.departHour, DAY.workHours * MINUTES_PER_HOUR);
   }
   if (exercise.kind !== 'none' && exercise.minutes > 0) {
-    book(plan, 'exercise', exercise.hour, exercise.minutes);
+    book(day, 'exercise', exercise.hour, exercise.minutes);
   }
-  for (const [hour, slot] of plan.entries()) {
+  for (const [hour, slot] of day.entries()) {
     slot.minutes[SLEEP_HOURS.has(hour) ? 'sleep' : 'home'] += slot.free;
     slot.free = 0;
   }
-  return plan;
+  return day;
 }
 
 interface DoseInput {
@@ -68,46 +73,42 @@ interface DoseInput {
   commuting: boolean;
 }
 
-function exposureAt(
-  place: Place,
-  outdoor: number,
-  input: DoseInput,
-): { conc: number; rate: number } {
-  const mode = MODES[input.lifestyle.commute.mode];
-  switch (place) {
-    case 'work':
-      return { conc: DAY.workRatio * outdoor, rate: RATE.rest };
-    case 'commute': {
-      const mask = input.n95 && mode.exposed ? N95_FACTOR : 1;
-      return { conc: mode.ratio * outdoor * mask, rate: mode.rate };
-    }
-    case 'exercise': {
-      const outside = input.lifestyle.exercise.kind === 'outdoor';
-      return { conc: outside ? outdoor : indoorPm(outdoor, input.home), rate: RATE.exercise };
-    }
-    default:
-      return {
-        conc: indoorPm(outdoor, input.home),
-        rate: place === 'sleep' ? RATE.sleep : RATE.rest,
-      };
-  }
+interface Exposure {
+  conc: number;
+  rate: number;
 }
+
+/** Concentration and breathing rate for each micro-environment, given the hour's outdoor PM2.5. */
+const EXPOSURE: Record<MicroEnv, (outdoor: number, input: DoseInput) => Exposure> = {
+  sleep: (outdoor, input) => ({ conc: indoorPm(outdoor, input.home), rate: RATE.sleep }),
+  home: (outdoor, input) => ({ conc: indoorPm(outdoor, input.home), rate: RATE.rest }),
+  work: (outdoor) => ({ conc: DAY.workRatio * outdoor, rate: RATE.rest }),
+  commute: (outdoor, input) => {
+    const mode = MODES[input.lifestyle.commute.mode];
+    const mask = input.n95 && mode.exposed ? N95_FACTOR : 1;
+    return { conc: mode.ratio * outdoor * mask, rate: mode.rate };
+  },
+  exercise: (outdoor, input) => {
+    const outside = input.lifestyle.exercise.kind === 'outdoor';
+    return { conc: outside ? outdoor : indoorPm(outdoor, input.home), rate: RATE.exercise };
+  },
+};
 
 /** Inhaled PM2.5 dose (µg), volume breathed (m³) and cigarette-equivalent for one day. */
 export function doseFor(input: DoseInput): Dose {
-  const byPlace: Record<Place, number> = { sleep: 0, home: 0, work: 0, commute: 0, exercise: 0 };
+  const byPlace: Record<MicroEnv, number> = { sleep: 0, home: 0, work: 0, commute: 0, exercise: 0 };
   let volume = 0;
   schedule(input.lifestyle, input.commuting).forEach((slot, hour) => {
     const outdoor = input.ambient[hour] ?? 0;
-    for (const place of PLACES) {
-      const hours = slot.minutes[place] / 60;
-      const { conc, rate } = exposureAt(place, outdoor, input);
+    for (const place of ENVS) {
+      const hours = slot.minutes[place] / MINUTES_PER_HOUR;
+      const { conc, rate } = EXPOSURE[place](outdoor, input);
       byPlace[place] += conc * rate * hours;
       volume += rate * hours;
     }
   });
-  const totalUg = PLACES.reduce((sum, p) => sum + byPlace[p], 0);
-  for (const place of PLACES) {
+  const totalUg = ENVS.reduce((sum, p) => sum + byPlace[p], 0);
+  for (const place of ENVS) {
     byPlace[place] = Math.round(byPlace[place]);
   }
   return {

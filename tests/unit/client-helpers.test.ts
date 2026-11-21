@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
+import { act, renderHook } from '@testing-library/preact';
+import { describe, expect, it, vi } from 'vitest';
 
 import { checkProfile } from '../../src/client/features/intake/IntakeForm.js';
 import { nextActive } from '../../src/client/features/intake/LocationField.js';
 import { placeFromPosition } from '../../src/client/features/intake/useMyLocation.js';
 import { parseReading } from '../../src/client/features/plan/AirHeader.js';
+import { useNow } from '../../src/client/lib/useNow.js';
 import { sample } from '../helpers/fixtures.js';
 
 describe('intake helpers', () => {
@@ -52,5 +54,21 @@ describe('manual reading', () => {
     ['abc', null],
   ])('parseReading(%j) is %j', (text, expected) => {
     expect(parseReading(text)).toBe(expected);
+  });
+});
+
+describe('useNow', () => {
+  it('refreshes the time on its interval and stops when unmounted', () => {
+    vi.useFakeTimers();
+    let tick = 0;
+    const clock = (): Date => new Date(Date.UTC(2026, 10, 21, 10, tick++));
+    const { result, unmount } = renderHook(() => useNow(clock, 1000));
+    const first = result.current.getTime();
+    void act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.getTime()).toBeGreaterThan(first);
+    unmount();
+    vi.useRealTimers();
   });
 });

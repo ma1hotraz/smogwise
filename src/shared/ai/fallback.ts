@@ -4,6 +4,7 @@
  */
 import type { AiContext, AskResponse, BriefResponse, Language } from '../schema/ai.js';
 import type { RuleId } from '../engine/types.js';
+import { TIER } from '../engine/data/scales.js';
 
 type Intent =
   'exercise' | 'children' | 'mask' | 'purifier' | 'windows' | 'commute' | 'heating' | 'general';
@@ -95,8 +96,8 @@ function windowText(ctx: AiContext, language: Language): string {
   return ctx.cleanWindow ? text.some(ctx.cleanWindow) : text.none;
 }
 
-/** Whether today calls for the stricter advice (tier 3 "unhealthy" or worse). */
-const STRICT_FROM_TIER = 3;
+/** Stricter advice from the "unhealthy" tier upwards. */
+const STRICT_FROM_TIER = TIER.unhealthy;
 
 function bodyEn(intent: Intent, ctx: AiContext): string {
   const bad = ctx.tier >= STRICT_FROM_TIER;

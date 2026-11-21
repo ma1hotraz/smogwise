@@ -4,6 +4,7 @@ import path from 'node:path';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 
+import { sharmaContext } from '../../helpers/fakes.js';
 import { generateContent } from '../../helpers/genai.js';
 
 import { bootstrap } from '../../../src/server/bootstrap.js';
@@ -16,23 +17,20 @@ vi.mock('@google/genai', async (importActual) =>
 describe('bootstrap', () => {
   it('logs token usage (counts only, never content) after a model call', async () => {
     generateContent.mockResolvedValue({
-      text: '{}',
+      text: JSON.stringify({ answer: 'Walk indoors today.', citedRuleIds: [], followUps: [] }),
       usageMetadata: { promptTokenCount: 12, candidatesTokenCount: 5 },
     });
     const write = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
-    const { ai } = bootstrap({ NODE_ENV: 'test', GEMINI_API_KEY: 'k' });
-    await ai.generateJson({
-      system: 's',
-      prompt: 'secret prompt text',
-      schema: {},
-      maxOutputTokens: 10,
-      signal: new AbortController().signal,
-    });
+    const { app } = bootstrap({ NODE_ENV: 'test', GEMINI_API_KEY: 'k' });
+    const question = 'secret question text about my mother';
+    await request(app)
+      .post('/api/ask')
+      .send({ question, context: sharmaContext(), language: 'en' });
     const lines = write.mock.calls.map((call) => String(call[0]));
     write.mockRestore();
     const usage = lines.find((line) => line.includes('ai_usage')) ?? '';
     expect(JSON.parse(usage)).toMatchObject({ promptTokens: 12, outputTokens: 5 });
-    expect(lines.join('')).not.toContain('secret prompt text');
+    expect(lines.join('')).not.toContain(question);
   });
 
   it('wires the real fetch into the upstream client (network is disabled in tests, so 502)', async () => {
@@ -43,14 +41,14 @@ describe('bootstrap', () => {
   });
 
   it('uses the disabled client without a key', async () => {
-    const { app, ai } = bootstrap({ NODE_ENV: 'test' });
-    expect(ai.enabled).toBe(false);
+    const { app, aiEnabled } = bootstrap({ NODE_ENV: 'test' });
+    expect(aiEnabled).toBe(false);
     expect((await request(app).get('/api/health')).body.ai).toBe('disabled');
   });
 
   it('enables Gemini when a key is present, without exposing it', async () => {
-    const { app, ai } = bootstrap({ NODE_ENV: 'test', GEMINI_API_KEY: 'test-key-value' });
-    expect(ai.enabled).toBe(true);
+    const { app, aiEnabled } = bootstrap({ NODE_ENV: 'test', GEMINI_API_KEY: 'test-key-value' });
+    expect(aiEnabled).toBe(true);
     const res = await request(app).get('/api/health');
     expect(res.body.ai).toBe('enabled');
     expect(JSON.stringify(res.body) + JSON.stringify(res.headers)).not.toContain('test-key-value');

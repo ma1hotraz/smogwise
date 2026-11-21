@@ -3,6 +3,7 @@ import { buildContext } from '../../src/shared/ai/context.js';
 import { buildPlan } from '../../src/shared/engine/plan.js';
 import type { AiContext } from '../../src/shared/schema/ai.js';
 import type { AiClient, GenerateArgs } from '../../src/server/ai/client.js';
+import { createGeminiService, rulesService } from '../../src/server/ai/service.js';
 import { createApp } from '../../src/server/app.js';
 import type { Config } from '../../src/server/config.js';
 import type { Logger, LogFields } from '../../src/server/logger.js';
@@ -12,10 +13,7 @@ import { NOW, sample, winterAir } from './fixtures.js';
 /** A scripted model: each call returns (or throws) the next item; records every call. */
 export class FakeAi implements AiClient {
   readonly calls: GenerateArgs[] = [];
-  constructor(
-    private readonly script: unknown[] = [],
-    readonly enabled = true,
-  ) {}
+  constructor(private readonly script: unknown[] = []) {}
 
   generateJson(args: GenerateArgs): Promise<unknown> {
     this.calls.push(args);
@@ -29,6 +27,9 @@ interface Captured {
   msg: string;
   fields: LogFields;
 }
+
+/** A logger that discards everything. */
+export const silentLogger: Logger = { log: () => undefined };
 
 export function captureLogger(): Logger & { lines: Captured[] } {
   const lines: Captured[] = [];
@@ -110,12 +111,25 @@ export function makeApp(
     staticDir?: string;
   } = {},
 ) {
+  const config = { ...TEST_CONFIG, ...options.config };
+  const logger = options.logger ?? captureLogger();
+  // A model client means the Gemini service; none means the rules service, as in bootstrap.ts.
+  const ai = options.ai
+    ? createGeminiService({
+        ai: options.ai,
+        logger,
+        timeoutMs: config.aiTimeoutMs,
+        maxEntries: config.cacheMaxEntries,
+        now: () => NOW.getTime(),
+      })
+    : rulesService;
   return createApp({
-    ai: options.ai ?? new FakeAi([], false),
+    ai,
+    aiEnabled: options.ai !== undefined,
     upstream: createOpenMeteo(options.fetch ?? fakeFetch(), 1000),
     clock: { now: () => NOW },
-    logger: options.logger ?? captureLogger(),
-    config: { ...TEST_CONFIG, ...options.config },
+    logger,
+    config,
     staticDir: options.staticDir,
   });
 }

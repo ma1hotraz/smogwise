@@ -5,6 +5,7 @@ import { COMMUNITY_COPY, fill } from './data/copy.js';
 import { CAR_MODES, TREE_KG_CO2_YEAR, WEEKS_PER_MONTH } from './data/factors.js';
 import { reportingChannel } from './location.js';
 import type { CommunityAction, Swap, Tier } from './types.js';
+import { TIER } from './data/scales.js';
 
 interface CommunityContext {
   lifestyle: Lifestyle;
@@ -20,22 +21,29 @@ const WHEN: Record<ActionId, (ctx: CommunityContext) => boolean> = {
   carpool: (c) => CAR_MODES.includes(c.lifestyle.commute.mode),
   compost: () => true,
   report: () => true,
-  'clean-room': (c) => c.tierGeneral >= 3,
+  'clean-room': (c) => c.tierGeneral >= TIER.unhealthy,
   school: (c) => c.household.under5 + c.household.children > 0,
-  neighbours: (c) => c.tierGeneral >= 4,
+  neighbours: (c) => c.tierGeneral >= TIER.veryUnhealthy,
 };
+
+const ACTION_IDS: readonly ActionId[] = [
+  'carpool',
+  'compost',
+  'report',
+  'clean-room',
+  'school',
+  'neighbours',
+];
 
 /** C03: actions a housing society, school or workplace can take together. */
 export function communityActions(ctx: CommunityContext): CommunityAction[] {
   const channel = reportingChannel(ctx.countryCode);
-  return (Object.keys(WHEN) as ActionId[])
-    .filter((id) => WHEN[id](ctx))
-    .map((id) => ({
-      id,
-      ruleId: 'C03',
-      title: COMMUNITY_COPY[id].title,
-      detail: fill(COMMUNITY_COPY[id].detail, { channel }),
-    }));
+  return ACTION_IDS.filter((id) => WHEN[id](ctx)).map((id) => ({
+    id,
+    ruleId: 'C03',
+    title: COMMUNITY_COPY[id].title,
+    detail: fill(COMMUNITY_COPY[id].detail, { channel }),
+  }));
 }
 
 interface CommunityImpact {

@@ -14,7 +14,8 @@ import {
   type BriefResponse,
   type Language,
 } from '../../shared/schema/ai.js';
-import { AirData, GeocodeResponse, roundCoord, type Place } from '../../shared/schema/air.js';
+import { AirData, GeocodeResponse, roundCoord } from '../../shared/schema/air.js';
+import type { Location } from '../../shared/schema/profile.js';
 
 async function request<T>(
   url: string,
@@ -51,7 +52,7 @@ export function fetchAir(lat: number, lon: number, signal?: AbortSignal): Promis
 }
 
 /** Places matching a name. */
-export async function searchPlaces(q: string, signal?: AbortSignal): Promise<Place[]> {
+export async function searchPlaces(q: string, signal?: AbortSignal): Promise<Location[]> {
   const query = new URLSearchParams({ q });
   const body = await request(
     `/api/geocode?${query.toString()}`,
@@ -78,9 +79,10 @@ export async function askSmogwise(
   question: string,
   context: AiContext,
   language: Language,
+  signal?: AbortSignal,
 ): Promise<AskResponse> {
   try {
-    return await request('/api/ask', AskReply, postJson({ question, context, language }));
+    return await request('/api/ask', AskReply, postJson({ question, context, language }, signal));
   } catch {
     return rulesAnswer(question, context, language);
   }

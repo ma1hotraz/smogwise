@@ -4,8 +4,7 @@ import path from 'node:path';
 
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 
-import type { AiClient } from './ai/client.js';
-import { createGeminiService, rulesService, type AiService } from './ai/service.js';
+import type { AiService } from './ai/service.js';
 import type { Clock } from './clock.js';
 import type { Config } from './config.js';
 import type { Logger } from './logger.js';
@@ -23,7 +22,10 @@ import { apiRouter } from './routes.js';
 import type { OpenMeteo } from './upstream/openMeteo.js';
 
 interface AppDeps {
-  ai: AiClient;
+  /** The assistant, chosen by the composition root (Gemini or rules). */
+  ai: AiService;
+  /** Reported by /api/health. */
+  aiEnabled: boolean;
   upstream: OpenMeteo;
   clock: Clock;
   logger: Logger;
@@ -68,25 +70,12 @@ function serveClient(app: Express, staticDir: string): void {
   });
 }
 
-/** Chooses the assistant once, at start-up: Gemini when a model is configured, otherwise rules. */
-function aiService({ ai, logger, config, clock }: AppDeps): AiService {
-  return ai.enabled
-    ? createGeminiService({
-        ai,
-        logger,
-        timeoutMs: config.aiTimeoutMs,
-        maxEntries: config.cacheMaxEntries,
-        now: () => clock.now().getTime(),
-      })
-    : rulesService;
-}
-
 /**
- * Builds the Express app. The external dependencies (AI client, upstream fetch, clock, logger,
+ * Builds the Express app. The external dependencies (assistant, upstream fetch, clock, logger,
  * config) are injected so tests run the real app with fakes and no network.
  */
 export function createApp(deps: AppDeps): Express {
-  const { ai, upstream, clock, logger, config } = deps;
+  const { ai, aiEnabled, upstream, clock, logger, config } = deps;
   const app = express();
   app.use(requestLogging(logger));
   applySecurity(app);
@@ -101,8 +90,8 @@ export function createApp(deps: AppDeps): Express {
     '/api',
     apiRouter({
       upstream,
-      ai: aiService(deps),
-      aiEnabled: ai.enabled,
+      ai,
+      aiEnabled,
       clock,
       logger,
       maxEntries: config.cacheMaxEntries,

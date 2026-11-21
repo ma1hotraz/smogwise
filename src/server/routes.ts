@@ -3,34 +3,36 @@ import { Router, type RequestHandler, type Response } from 'express';
 import type * as z from 'zod/mini';
 
 import { AskRequest, BriefRequest } from '../shared/schema/ai.js';
-import {
-  AirQuery,
-  GeocodeQuery,
-  roundCoord,
-  type AirData,
-  type Place,
-} from '../shared/schema/air.js';
+import { AirQuery, GeocodeQuery, roundCoord, type AirData } from '../shared/schema/air.js';
 import type { AiService } from './ai/service.js';
 import { TtlCache } from './cache.js';
 import type { Clock } from './clock.js';
 import type { Logger } from './logger.js';
 import { UpstreamError, type OpenMeteo } from './upstream/openMeteo.js';
 import { sendError } from './httpErrors.js';
+import type { Location } from '../shared/schema/profile.js';
 
 const AIR_TTL_MS = 30 * 60_000;
 const GEOCODE_TTL_MS = 24 * 60 * 60_000;
-const VERSION = '1.0.0';
+/** Version of the HTTP API contract (docs/02 §5), reported by /api/health. */
+const API_VERSION = '1.0.0';
 
-interface RouteDeps {
+/** What the upstream data routes need. */
+interface DataRouteDeps {
   upstream: OpenMeteo;
-  ai: AiService;
-  aiEnabled: boolean;
   clock: Clock;
   logger: Logger;
   maxEntries: number;
-  aiLimits: RequestHandler[];
   dataLimit: RequestHandler;
 }
+
+/** What the assistant routes need. */
+interface AiRouteDeps {
+  ai: AiService;
+  aiLimits: RequestHandler[];
+}
+
+type RouteDeps = DataRouteDeps & AiRouteDeps & { aiEnabled: boolean };
 
 /** Parses `value` or answers 400 with a generic body; returns undefined when it answered. */
 function parse<T>(schema: z.ZodMiniType<T>, value: unknown, res: Response): T | undefined {
@@ -58,10 +60,10 @@ async function upstreamOr502<T>(
 }
 
 /** GET /geocode and /air: validated, cached, rate-limited upstream proxies. */
-function dataRoutes(router: Router, deps: RouteDeps): void {
+function dataRoutes(router: Router, deps: DataRouteDeps): void {
   const now = (): number => deps.clock.now().getTime();
   const air = new TtlCache<AirData>(deps.maxEntries, AIR_TTL_MS, now);
-  const places = new TtlCache<Place[]>(deps.maxEntries, GEOCODE_TTL_MS, now);
+  const places = new TtlCache<Location[]>(deps.maxEntries, GEOCODE_TTL_MS, now);
 
   router.get('/geocode', deps.dataLimit, async (req, res) => {
     const query = parse(GeocodeQuery, req.query, res);
@@ -85,7 +87,7 @@ function dataRoutes(router: Router, deps: RouteDeps): void {
 }
 
 /** POST /brief and /ask: validated and rate-limited; the service never throws. */
-function aiRoutes(router: Router, deps: RouteDeps): void {
+function aiRoutes(router: Router, deps: AiRouteDeps): void {
   router.post('/brief', ...deps.aiLimits, async (req, res) => {
     const body = parse(BriefRequest, req.body, res);
     if (body) {
@@ -105,7 +107,7 @@ function aiRoutes(router: Router, deps: RouteDeps): void {
 export function apiRouter(deps: RouteDeps): Router {
   const router = Router();
   router.get('/health', (_req, res) => {
-    res.json({ ok: true, ai: deps.aiEnabled ? 'enabled' : 'disabled', version: VERSION });
+    res.json({ ok: true, ai: deps.aiEnabled ? 'enabled' : 'disabled', version: API_VERSION });
   });
   dataRoutes(router, deps);
   aiRoutes(router, deps);

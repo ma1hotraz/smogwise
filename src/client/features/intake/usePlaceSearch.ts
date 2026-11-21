@@ -1,14 +1,14 @@
 /** Debounced, abortable place search with an announced status (docs/06 §2 combobox). */
 import { useEffect, useState } from 'preact/hooks';
 
-import type { Place } from '../../../shared/schema/air.js';
 import { searchPlaces } from '../../lib/api.js';
+import type { Location } from '../../../shared/schema/profile.js';
 
 const DEBOUNCE_MS = 300;
 
 /** Places matching `query`; nothing is searched for the label of the place already chosen. */
 export function usePlaceSearch(query: string, selectedLabel: string) {
-  const [results, setResults] = useState<Place[]>([]);
+  const [results, setResults] = useState<Location[]>([]);
   const [status, setStatus] = useState('');
   useEffect(() => {
     const q = query.trim();

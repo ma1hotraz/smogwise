@@ -2,11 +2,12 @@
 import { INDOOR_SOURCES, type Lifestyle } from '../schema/profile.js';
 import { MODES } from './data/factors.js';
 import type { Choices, Tier, Windows } from './types.js';
+import { TIER } from './data/scales.js';
 
 /** Free, no-regret actions the plan applies by default (R03, R04, H04–H09). */
 export function recommendedChoices(lifestyle: Lifestyle, tierSensitive: Tier): Choices {
   return {
-    n95: MODES[lifestyle.commute.mode].exposed && tierSensitive >= 3,
+    n95: MODES[lifestyle.commute.mode].exposed && tierSensitive >= TIER.unhealthy,
     smartExercise: lifestyle.exercise.kind === 'outdoor',
     removeSources: INDOOR_SOURCES.filter((s) => lifestyle.sources[s]),
     kitchenExhaust: lifestyle.cooking === 'lpg',
@@ -19,10 +20,10 @@ function smartExercise(
   tierSensitive: Tier,
   windows: Windows,
 ): Lifestyle['exercise'] {
-  if (tierSensitive >= 3) {
+  if (tierSensitive >= TIER.unhealthy) {
     return { ...exercise, kind: 'indoor' };
   }
-  if (tierSensitive === 2 && windows.clean && windows.meaningful) {
+  if (tierSensitive === TIER.caution && windows.clean && windows.meaningful) {
     return { ...exercise, hour: windows.clean.startHour };
   }
   return exercise;

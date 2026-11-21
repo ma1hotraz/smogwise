@@ -44,6 +44,16 @@ export const BREAKPOINTS: Record<Scale, SixRows> = {
 /** Lower PM2.5 bound (µg/m³) of tiers 1–5; tier 0 is below 15 (WHO 2021 24-h guideline). */
 export const TIER_FLOORS = [15, 35.5, 55.5, 125.5, 225.5] as const;
 
+/** Named personal tiers (docs/03 A03), so rules read as words rather than numbers. */
+export const TIER = {
+  clear: 0,
+  fair: 1,
+  caution: 2,
+  unhealthy: 3,
+  veryUnhealthy: 4,
+  emergency: 5,
+} as const;
+
 export const TIER_NAMES = [
   'Clear',
   'Fair',

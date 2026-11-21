@@ -40,10 +40,7 @@ export const GeocodeQuery = z.strictObject({
   q: z.string().check(z.trim(), z.regex(/^[\p{L}\p{M} .,'()-]{2,60}$/u)),
 });
 
-export const Place = Location;
-export type Place = Location;
-
-export const GeocodeResponse = z.strictObject({ results: z.array(Place).check(z.maxLength(5)) });
+export const GeocodeResponse = z.strictObject({ results: z.array(Location).check(z.maxLength(5)) });
 export type GeocodeResponse = z.infer<typeof GeocodeResponse>;
 
 /** Rounds a coordinate to one decimal place (~11 km), the privacy grid used everywhere. */

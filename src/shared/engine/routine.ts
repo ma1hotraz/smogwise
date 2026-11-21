@@ -6,6 +6,8 @@ import { burnsFuelIndoors, MODES, N95_FACTOR } from './data/factors.js';
 import { commutes } from './choices.js';
 import { indoorPm, type HomeState } from './indoor.js';
 import type { RoutineStep, RuleId, Tier, Windows } from './types.js';
+import { TIER } from './data/scales.js';
+import { AIRING_MINUTES, ROUTINE_HOURS } from './data/routine.js';
 
 export interface RoutineContext {
   lifestyle: Lifestyle;
@@ -20,8 +22,6 @@ export interface RoutineContext {
 
 type CopyKey = keyof typeof ROUTINE_COPY;
 type Values = Record<string, string | number>;
-
-const MORNING = 7;
 
 /** One routine step from a copy key, with placeholders filled. */
 function step(
@@ -44,22 +44,31 @@ const savedPct = (before: number, after: number): number =>
 function windowSteps(ctx: RoutineContext): RoutineStep[] {
   const { clean, meaningful } = ctx.windows;
   const steps: RoutineStep[] = [];
-  if (ctx.tierGeneral >= 2 && clean && meaningful && clean.startHour > MORNING) {
+  if (
+    ctx.tierGeneral >= TIER.caution &&
+    clean &&
+    meaningful &&
+    clean.startHour > ROUTINE_HOURS.morning
+  ) {
     const values = {
       time: formatHour(clean.startHour),
-      now: ambientAt(ctx, MORNING),
+      now: ambientAt(ctx, ROUTINE_HOURS.morning),
       clean: round(clean.meanPm25),
     };
-    steps.push(step(MORNING, 'R01', 'shutUntil', values));
+    steps.push(step(ROUTINE_HOURS.morning, 'R01', 'shutUntil', values));
   }
-  if (ctx.tierGeneral <= 1) {
-    steps.push(step(9, 'R02', 'airFreely'));
-  } else if (ctx.tierGeneral === 5) {
-    steps.push(step(8, 'R02', 'shutAllDay'));
+  if (ctx.tierGeneral <= TIER.fair) {
+    steps.push(step(ROUTINE_HOURS.airFreely, 'R02', 'airFreely'));
+  } else if (ctx.tierGeneral === TIER.emergency) {
+    steps.push(step(ROUTINE_HOURS.shutAllDay, 'R02', 'shutAllDay'));
   } else if (clean) {
     const span = formatWindow(clean.startHour, clean.hours);
     steps.push(
-      step(clean.startHour, 'R02', 'airBurst', { minutes: ctx.tierGeneral === 4 ? 5 : 10, span }),
+      step(clean.startHour, 'R02', 'airBurst', {
+        minutes:
+          ctx.tierGeneral === TIER.veryUnhealthy ? AIRING_MINUTES.short : AIRING_MINUTES.normal,
+        span,
+      }),
     );
   }
   return steps;
@@ -69,12 +78,16 @@ function windowSteps(ctx: RoutineContext): RoutineStep[] {
 function outdoorExercise(ctx: RoutineContext, usual: number): RoutineStep {
   const { exercise } = ctx.lifestyle;
   const { clean, meaningful } = ctx.windows;
-  if (ctx.tierSensitive === 2 && clean && meaningful) {
+  if (ctx.tierSensitive === TIER.caution && clean && meaningful) {
     const impact = `About ${savedPct(usual, clean.meanPm25)}% less PM2.5 per breath than at ${formatHour(exercise.hour)}.`;
     const key = ctx.sensitive ? 'exerciseMoveSensitive' : 'exerciseMove';
     return step(clean.startHour, 'R03', key, { time: formatHour(clean.startHour) }, impact);
   }
-  return step(exercise.hour, 'R03', ctx.tierSensitive === 2 ? 'exerciseLight' : 'exerciseAsUsual');
+  return step(
+    exercise.hour,
+    'R03',
+    ctx.tierSensitive === TIER.caution ? 'exerciseLight' : 'exerciseAsUsual',
+  );
 }
 
 /** R03: exercise timing and place. */
@@ -84,7 +97,7 @@ function exerciseSteps(ctx: RoutineContext): RoutineStep[] {
     return [];
   }
   const usual = ambientAt(ctx, exercise.hour);
-  if (exercise.kind === 'outdoor' && ctx.tierSensitive < 3) {
+  if (exercise.kind === 'outdoor' && ctx.tierSensitive < TIER.unhealthy) {
     return [outdoorExercise(ctx, usual)];
   }
   const impact = `About ${savedPct(usual, indoorPm(usual, ctx.home))}% less PM2.5 per breath than outside at ${formatHour(exercise.hour)}.`;
@@ -101,12 +114,18 @@ function commuteSteps(ctx: RoutineContext): RoutineStep[] {
   if (!MODES[mode].exposed) {
     return [step(departHour, 'R04', 'carRecirculate')];
   }
-  if (ctx.tierSensitive < 3) {
+  if (ctx.tierSensitive < TIER.unhealthy) {
     return [step(departHour, 'R04', 'commuteQuiet')];
   }
   const impact = `An N95 cuts what you breathe in on the road by about ${Math.round((1 - N95_FACTOR) * 100)}%.`;
   return [
-    step(departHour, 'R04', ctx.tierGeneral >= 4 ? 'commuteMetro' : 'commuteMask', {}, impact),
+    step(
+      departHour,
+      'R04',
+      ctx.tierGeneral >= TIER.veryUnhealthy ? 'commuteMetro' : 'commuteMask',
+      {},
+      impact,
+    ),
   ];
 }
 
@@ -116,16 +135,22 @@ function householdSteps(ctx: RoutineContext): RoutineStep[] {
   const steps: RoutineStep[] = [];
   if (household.under5 + household.children > 0) {
     steps.push(
-      tierSensitive >= 3
-        ? step(16, 'R05', 'playIndoor')
-        : step(windows.clean?.startHour ?? 16, 'R05', 'playWindow'),
+      tierSensitive >= TIER.unhealthy
+        ? step(ROUTINE_HOURS.play, 'R05', 'playIndoor')
+        : step(windows.clean?.startHour ?? ROUTINE_HOURS.play, 'R05', 'playWindow'),
     );
   }
-  if (household.over65 > 0 && tierSensitive >= 3) {
-    steps.push(step(17, 'R09', 'elderWalk'));
+  if (household.over65 > 0 && tierSensitive >= TIER.unhealthy) {
+    steps.push(step(ROUTINE_HOURS.elderWalk, 'R09', 'elderWalk'));
   }
   if (lifestyle.cooking !== 'induction') {
-    steps.push(step(19, 'R06', lifestyle.cooking === 'biomass' ? 'cookBiomass' : 'cookGas'));
+    steps.push(
+      step(
+        ROUTINE_HOURS.cooking,
+        'R06',
+        lifestyle.cooking === 'biomass' ? 'cookBiomass' : 'cookGas',
+      ),
+    );
   }
   return steps;
 }
@@ -134,9 +159,15 @@ function householdSteps(ctx: RoutineContext): RoutineStep[] {
 function eveningSteps(ctx: RoutineContext): RoutineStep[] {
   const steps: RoutineStep[] = [];
   if (burnsFuelIndoors(ctx.lifestyle.heating)) {
-    steps.push(step(20, 'R07', 'heatSafely'));
+    steps.push(step(ROUTINE_HOURS.heating, 'R07', 'heatSafely'));
   }
-  steps.push(step(22, 'R08', ctx.lifestyle.home.purifierCadr > 0 ? 'purifierNight' : 'doorNight'));
+  steps.push(
+    step(
+      ROUTINE_HOURS.night,
+      'R08',
+      ctx.lifestyle.home.purifierCadr > 0 ? 'purifierNight' : 'doorNight',
+    ),
+  );
   return steps;
 }
 

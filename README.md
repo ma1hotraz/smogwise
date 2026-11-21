@@ -103,7 +103,8 @@ tests/        unit, property, api, components, e2e
   in view-model hooks (`usePlanModel`, `useBrief`, `useAsk`, `useReadAloud`, `useAir`).
 - No dead code (knip) and **zero duplicated blocks** (jscpd), both enforced in CI; colour tokens
   are defined once for both themes with CSS `light-dark()`.
-- Dependency injection for fetch, AI, clock and logger; copy kept apart from logic
+- Dependency injection on the server for fetch, the AI client, clock and logger (the assistant is
+  chosen once in the composition root, `src/server/bootstrap.ts`); copy kept apart from logic
   ([`src/shared/engine/data/copy.ts`](src/shared/engine/data/copy.ts)); every constant cites its source.
 - CI: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint, dead code (knip), duplication (jscpd, zero clones), format, typecheck, tests with
   coverage gates, build, bundle budgets, `npm audit`, Playwright and gitleaks. Pre-commit hook in `.githooks/`.
@@ -127,7 +128,7 @@ tests/        unit, property, api, components, e2e
 | Metric                      | Budget  | Measured                 |
 | --------------------------- | ------- | ------------------------ |
 | Initial JS (gzip)           | ≤ 35 kB | **25.4 kB**              |
-| Total JS, all chunks (gzip) | ≤ 60 kB | **42.8 kB**              |
+| Total JS, all chunks (gzip) | ≤ 60 kB | **43.0 kB**              |
 | CSS (gzip)                  | ≤ 8 kB  | **2.8 kB**               |
 | Web fonts                   | 0       | **0** (system fonts)     |
 | `buildPlan`                 | < 2 ms  | asserted over 1,000 runs |
@@ -145,8 +146,8 @@ npm test          # Vitest with coverage gates (fails below them)
 npm run test:e2e  # Playwright on the production build, no API key, upstream routed to fixtures
 ```
 
-**357** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
-Coverage: **100 % statements · 100 % functions · 100 % lines · 97.0 % branches**; the
+**358** unit, property, API and component tests · **24** end-to-end runs (12 tests × desktop and mobile).
+Coverage: **100 % statements · 100 % functions · 100 % lines · 96.9 % branches**; the
 decision engine is at 100 % on every measure. Property tests (fast-check, 500 runs each) prove: the index is monotonic; a
 purifier, an N95 or removing an indoor source never increases dose; the clean window is never
 beaten; `buildPlan` never throws. The property suite found a real modelling edge case — sealing a

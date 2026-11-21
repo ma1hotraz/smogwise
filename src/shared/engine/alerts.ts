@@ -1,10 +1,10 @@
 /** AL01–AL06 — safety alerts, most serious first (docs/03). */
 import type { AirSource } from '../schema/air.js';
 import type { Household, Lifestyle } from '../schema/profile.js';
-import { ALERT_COPY, fill, type Copy } from './data/copy.js';
+import { ALERT_COPY, fill, SENSITIVE_LABELS, type Copy } from './data/copy.js';
 import { burnsFuelIndoors } from './data/factors.js';
-import { SENSITIVE_LABELS } from './risk.js';
 import type { Alert, AlertLevel, RuleId, SensitiveGroup, Tier } from './types.js';
+import { TIER } from './data/scales.js';
 
 interface AlertContext {
   lifestyle: Lifestyle;
@@ -41,13 +41,13 @@ const RULES: readonly AlertRule[] = [
   {
     ruleId: 'AL04',
     level: 'danger',
-    when: (c) => c.tierGeneral === 5,
+    when: (c) => c.tierGeneral === TIER.emergency,
     copy: () => ALERT_COPY.AL04,
   },
   {
     ruleId: 'AL02',
     level: 'warning',
-    when: (c) => c.sensitive.length > 0 && c.tierSensitive >= 3,
+    when: (c) => c.sensitive.length > 0 && c.tierSensitive >= TIER.unhealthy,
     copy: (c) => ({
       title: ALERT_COPY.AL02.title,
       detail: fill(ALERT_COPY.AL02.detail, {
@@ -60,13 +60,13 @@ const RULES: readonly AlertRule[] = [
     level: 'warning',
     when: (c) =>
       (c.household.respiratory || c.household.heart || c.household.over65 > 0) &&
-      c.tierGeneral >= 4,
+      c.tierGeneral >= TIER.veryUnhealthy,
     copy: () => ALERT_COPY.AL03,
   },
   {
     ruleId: 'AL05',
     level: 'warning',
-    when: (c) => c.household.pregnant && c.tierGeneral >= 3,
+    when: (c) => c.household.pregnant && c.tierGeneral >= TIER.unhealthy,
     copy: () => ALERT_COPY.AL05,
   },
   {

@@ -46,7 +46,7 @@ public issue. We aim to reply within three working days.
 
 - "Use my location" rounds coordinates to 0.1° (about 11 km) **in the browser** before use.
 - The profile lives only in `localStorage`; "Forget my data" removes everything Smogwise stored.
-- No accounts, cookies, analytics or server-side storage. Server logs hold route, status and
-  timing only — never questions, answers or profiles.
+- No accounts, cookies, analytics or server-side storage. Server logs hold a request id,
+  route, status, timing, fallback reasons and token counts — never questions, answers or profiles.
 
 The full threat model is in [`docs/05_SECURITY.md`](docs/05_SECURITY.md).

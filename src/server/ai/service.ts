@@ -1,5 +1,5 @@
 /**
- * Daily brief and Ask Smogwise (docs/04 §6). Two implementations of one interface, chosen once at
+ * Daily brief and Ask Smogwise (docs/04 §6 guardrails, §8 implementations). Two implementations of one interface, chosen once at
  * start-up: the rules service (no API key) and the Gemini service. The Gemini service runs every
  * model call through one guarded pipeline: model → zod → number check → accept, else fall back.
  */

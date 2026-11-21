@@ -16,7 +16,8 @@ const ok = (
   text,
   usageMetadata: usage,
 });
-const apiError = (status: number) => new ApiError({ message: 'upstream', status });
+const apiError = (status: number, message = 'upstream') => new ApiError({ message, status });
+const thinkingRejected = () => apiError(400, 'Thinking level is not supported for this model.');
 const args = (signal = new AbortController().signal) => ({
   system: 'sys',
   prompt: 'prompt',
@@ -50,7 +51,6 @@ describe('GeminiClient', () => {
       },
     });
     expect(onUsage).toHaveBeenCalledWith({ promptTokens: 10, outputTokens: 5 });
-    expect(client.enabled).toBe(true);
   });
 
   it('works without a usage callback', async () => {
@@ -91,7 +91,7 @@ describe('GeminiClient', () => {
   });
 
   it('drops the thinking parameter after a 400 instead of downgrading the model', async () => {
-    generateContent.mockRejectedValueOnce(apiError(400)).mockResolvedValueOnce(ok('{"b":2}'));
+    generateContent.mockRejectedValueOnce(thinkingRejected()).mockResolvedValueOnce(ok('{"b":2}'));
     await expect(
       new GeminiClient({ apiKey: 'k', model: 'm' }).generateJson(args()),
     ).resolves.toEqual({ b: 2 });
@@ -103,10 +103,20 @@ describe('GeminiClient', () => {
   });
 
   it('propagates rejection when the 400 thinking downgrade fallback fails', async () => {
-    generateContent.mockRejectedValueOnce(apiError(400)).mockRejectedValueOnce(apiError(400));
+    generateContent
+      .mockRejectedValueOnce(thinkingRejected())
+      .mockRejectedValueOnce(thinkingRejected());
     await expect(
       new GeminiClient({ apiKey: 'k', model: 'm' }).generateJson(args()),
     ).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it('does not make a second call for any other 400 (a bad request)', async () => {
+    generateContent.mockRejectedValueOnce(apiError(400, 'Invalid JSON schema'));
+    await expect(
+      new GeminiClient({ apiKey: 'k', model: 'm' }).generateJson(args()),
+    ).rejects.toBeInstanceOf(ApiError);
+    expect(generateContent).toHaveBeenCalledTimes(1);
   });
 
   it('honours custom maxRetries option', async () => {

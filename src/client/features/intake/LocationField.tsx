@@ -5,7 +5,6 @@
 import type { RefObject } from 'preact';
 import { useState } from 'preact/hooks';
 
-import type { Place } from '../../../shared/schema/air.js';
 import type { Location } from '../../../shared/schema/profile.js';
 import { placeLabel } from '../../lib/geo.js';
 import { useMyLocation } from './useMyLocation.js';
@@ -25,9 +24,9 @@ export function nextActive(key: string, current: number, count: number): number 
 }
 
 interface ListboxProps {
-  results: readonly Place[];
+  results: readonly Location[];
   active: number;
-  onChoose: (place: Place) => void;
+  onChoose: (place: Location) => void;
 }
 
 function PlaceListbox({ results, active, onChoose }: ListboxProps) {

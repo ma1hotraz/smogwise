@@ -1,11 +1,11 @@
 /**
- * Open-Meteo geocoding and air-quality clients (docs/05 §1 "Upstream fetch"). Hosts are fixed,
+ * Open-Meteo geocoding and air-quality clients (docs/05 §2 "Upstream hardening"). Hosts are fixed,
  * parameters go through URLSearchParams, responses are time- and size-capped and validated
  * before anything reaches the engine.
  */
 import * as z from 'zod/mini';
 
-import { MAX_HOURS, type AirData, type HourlyPoint, type Place } from '../../shared/schema/air.js';
+import { MAX_HOURS, type AirData, type HourlyPoint } from '../../shared/schema/air.js';
 import { Location } from '../../shared/schema/profile.js';
 import { MAX_PM25 } from '../../shared/limits.js';
 import { round } from '../../shared/time.js';
@@ -75,7 +75,9 @@ async function getJson(fetchFn: FetchFn, url: URL, timeoutMs: number): Promise<u
   }
 }
 
-function toPlace(raw: NonNullable<z.infer<typeof GeocodeBody>['results']>[number]): Place | null {
+function toPlace(
+  raw: NonNullable<z.infer<typeof GeocodeBody>['results']>[number],
+): Location | null {
   const parsed = Location.safeParse({
     name: raw.name,
     admin1: raw.admin1,
@@ -113,7 +115,7 @@ function urlFor(base: string, params: Record<string, string>): URL {
   return url;
 }
 
-async function geocode(fetchFn: FetchFn, timeoutMs: number, query: string): Promise<Place[]> {
+async function geocode(fetchFn: FetchFn, timeoutMs: number, query: string): Promise<Location[]> {
   const url = urlFor(GEOCODE_URL, { name: query, count: '10', language: 'en', format: 'json' });
   const body = GeocodeBody.safeParse(await getJson(fetchFn, url, timeoutMs));
   if (!body.success) {
@@ -121,7 +123,7 @@ async function geocode(fetchFn: FetchFn, timeoutMs: number, query: string): Prom
   }
   return (body.data.results ?? [])
     .map(toPlace)
-    .filter((p): p is Place => p !== null)
+    .filter((p): p is Location => p !== null)
     .slice(0, MAX_RESULTS);
 }
 
@@ -152,7 +154,7 @@ async function airQuality(
 }
 
 export interface OpenMeteo {
-  geocode(query: string): Promise<Place[]>;
+  geocode(query: string): Promise<Location[]>;
   air(lat: number, lon: number, fetchedAt: Date): Promise<AirData>;
 }
 
